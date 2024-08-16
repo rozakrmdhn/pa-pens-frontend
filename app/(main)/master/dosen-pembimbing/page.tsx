@@ -16,22 +16,23 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Slider } from 'primereact/slider';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
+import { DosenService } from '@/demo/service/DosenService';
 
-const Pengajuan = () => {
+const DosenPembimbing = () => {
     const router = useRouter();
-    const [customers, setCustomers] = useState<Demo.Customer[]>([]);
+    const [dosen, setDosen] = useState<Demo.Dosen[]>([]);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
-    
+
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
-        { label: 'Magang KP' },
-        { label: 'Pengajuan', command: () => router.push('/pengajuan') }
+        { label: 'Master Data' },
+        { label: 'Dosen Pembimbing', command: () => router.push('/master/dosen-pembimbing') }
     ];
 
-    const getCustomers = (data: Demo.Customer[]) => {
+    const getDosen = (data: Demo.Dosen[]) => {
         return [...(data || [])].map((d) => {
             d.date = new Date(d.date);
             return d;
@@ -111,8 +112,8 @@ const Pengajuan = () => {
     };
 
     useEffect(() => {
-        CustomerService.getCustomersSmall().then((data) => {
-            setCustomers(getCustomers(data));
+        DosenService.getDosen().then((data) => {
+            setDosen(getDosen(data));
             setLoading(false);
         });
 
@@ -177,12 +178,12 @@ const Pengajuan = () => {
             </div>
             <div className="col-12">
                 <div className='flex justify-content-between mb-3'>
-                    <h5 className='pt-2'>Pengajuan KP</h5>
-                    <Button label="Buat Pengajuan KP" icon="pi pi-plus" size="small" />
+                    <h5 className='pt-2'>Data Dosen Pembimbing</h5>
+                    <Button label="Sync" icon="pi pi-refresh" size="small" />
                 </div>
                 <div className="card p-3">
                 <DataTable
-                        value={customers}
+                        value={dosen}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -241,4 +242,4 @@ const Pengajuan = () => {
     );
 };
 
-export default Pengajuan;
+export default DosenPembimbing;

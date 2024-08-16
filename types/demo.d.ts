@@ -173,6 +173,75 @@ declare namespace Demo {
         };
     };
 
+    // DosenService
+    type Dosen = {
+        id?: number;
+        name?: string;
+        country?: ICountryObject;
+        company?: string;
+        date: Date;
+        status?: string;
+        activity?: number;
+        balance?: number | string;
+        verified?: boolean;
+        amount?: number;
+        price?: number;
+        rating?: number;
+        image?: string;
+        orders?: Demo.Dosen[];
+        inventoryStatus?: string;
+        representative: {
+            name: string;
+            image: string;
+        };
+    };
+
+    // MahasiswaService
+    type Mahasiswa = {
+        id?: number;
+        name?: string;
+        country?: ICountryObject;
+        company?: string;
+        date: Date;
+        status?: string;
+        activity?: number;
+        balance?: number | string;
+        verified?: boolean;
+        amount?: number;
+        price?: number;
+        rating?: number;
+        image?: string;
+        orders?: Demo.Mahasiswa[];
+        inventoryStatus?: string;
+        representative: {
+            name: string;
+            image: string;
+        };
+    };
+
+    // MitraService
+    type Mitra = {
+        id?: number;
+        name?: string;
+        country?: ICountryObject;
+        company?: string;
+        date: Date;
+        status?: string;
+        activity?: number;
+        balance?: number | string;
+        verified?: boolean;
+        amount?: number;
+        price?: number;
+        rating?: number;
+        image?: string;
+        orders?: Demo.Mitra[];
+        inventoryStatus?: string;
+        representative: {
+            name: string;
+            image: string;
+        };
+    };
+
     interface Event extends EventInput {
         location?: string;
         description?: string;

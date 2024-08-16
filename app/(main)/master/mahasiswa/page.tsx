@@ -7,7 +7,6 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { CustomerService } from '@/demo/service/CustomerService';
 import { Demo } from '@/types';
 import { Calendar } from 'primereact/calendar';
 import { InputNumber } from 'primereact/inputnumber';
@@ -16,22 +15,23 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Slider } from 'primereact/slider';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
+import { MahasiwaService } from '@/demo/service/MahasiswaService';
 
-const Pengajuan = () => {
+const Mahasiswa = () => {
     const router = useRouter();
-    const [customers, setCustomers] = useState<Demo.Customer[]>([]);
+    const [mahasiswa, setMahasiswa] = useState<Demo.Mahasiswa[]>([]);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
-    
+
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
-        { label: 'Magang KP' },
-        { label: 'Pengajuan', command: () => router.push('/pengajuan') }
+        { label: 'Master Data' },
+        { label: 'Mahasiwa', command: () => router.push('/master/mahasiswa') }
     ];
 
-    const getCustomers = (data: Demo.Customer[]) => {
+    const getMahasiwa = (data: Demo.Dosen[]) => {
         return [...(data || [])].map((d) => {
             d.date = new Date(d.date);
             return d;
@@ -111,8 +111,8 @@ const Pengajuan = () => {
     };
 
     useEffect(() => {
-        CustomerService.getCustomersSmall().then((data) => {
-            setCustomers(getCustomers(data));
+        MahasiwaService.getMahasiswa().then((data) => {
+            setMahasiswa(getMahasiwa(data));
             setLoading(false);
         });
 
@@ -177,12 +177,12 @@ const Pengajuan = () => {
             </div>
             <div className="col-12">
                 <div className='flex justify-content-between mb-3'>
-                    <h5 className='pt-2'>Pengajuan KP</h5>
-                    <Button label="Buat Pengajuan KP" icon="pi pi-plus" size="small" />
+                    <h5 className='pt-2'>Data Mahasiwa</h5>
+                    <Button label="Sync" icon="pi pi-refresh" size="small" />
                 </div>
                 <div className="card p-3">
                 <DataTable
-                        value={customers}
+                        value={mahasiswa}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -241,4 +241,4 @@ const Pengajuan = () => {
     );
 };
 
-export default Pengajuan;
+export default Mahasiswa;
