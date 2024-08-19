@@ -15,7 +15,6 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Slider } from 'primereact/slider';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
-import { MahasiwaService } from '@/demo/service/MahasiswaService';
 import { MitraService } from '@/demo/service/MitraService';
 
 const Mitra = () => {
