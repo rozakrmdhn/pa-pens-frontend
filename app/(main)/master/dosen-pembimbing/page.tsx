@@ -177,9 +177,8 @@ const DosenPembimbing = () => {
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-                <div className='flex justify-content-between mb-3'>
-                    <h5 className='pt-2'>Data Dosen Pembimbing</h5>
-                    <Button label="Sync" icon="pi pi-refresh" size="small" />
+                <div className="flex justify-content-between my-1">
+                    <h5>Data Dosen Pembimbing</h5>
                 </div>
                 <div className="card p-3">
                 <DataTable

@@ -15,7 +15,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Slider } from 'primereact/slider';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
-import { MahasiwaService } from '@/demo/service/MahasiswaService';
+import { MahasiswaService } from '@/demo/service/MahasiswaService';
 
 const Mahasiswa = () => {
     const router = useRouter();
@@ -111,7 +111,7 @@ const Mahasiswa = () => {
     };
 
     useEffect(() => {
-        MahasiwaService.getMahasiswa().then((data) => {
+        MahasiswaService.getMahasiswa().then((data) => {
             setMahasiswa(getMahasiwa(data));
             setLoading(false);
         });
@@ -140,33 +140,6 @@ const Mahasiswa = () => {
     const statusItemTemplate = (option: any) => {
         return <span className={`customer-badge status-${option}`}>{option}</span>;
     };
-    const activityBodyTemplate = (rowData: Demo.Customer) => {
-        return <ProgressBar value={rowData.activity} showValue={false} style={{ height: '.5rem' }}></ProgressBar>;
-    };
-    const activityFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return (
-            <React.Fragment>
-                <Slider value={options.value} onChange={(e) => options.filterCallback(e.value)} range className="m-3"></Slider>
-                <div className="flex align-items-center justify-content-between px-2">
-                    <span>{options.value ? options.value[0] : 0}</span>
-                    <span>{options.value ? options.value[1] : 100}</span>
-                </div>
-            </React.Fragment>
-        );
-    };
-    const verifiedBodyTemplate = (rowData: Demo.Customer) => {
-        return (
-            <i
-                className={classNames('pi', {
-                    'text-green-500 pi-check-circle': rowData.verified,
-                    'text-pink-500 pi-times-circle': !rowData.verified
-                })}
-            ></i>
-        );
-    };
-    const verifiedFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <TriStateCheckbox value={options.value} onChange={(e) => options.filterCallback(e.value)} />;
-    };
 
     const header = renderHeader();
 
@@ -176,9 +149,8 @@ const Mahasiswa = () => {
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-                <div className='flex justify-content-between mb-3'>
-                    <h5 className='pt-2'>Data Mahasiwa</h5>
-                    <Button label="Sync" icon="pi pi-refresh" size="small" />
+                <div className="flex justify-content-between my-1">
+                    <h5>Data Mahasiwa</h5>
                 </div>
                 <div className="card p-3">
                 <DataTable
@@ -217,23 +189,6 @@ const Mahasiswa = () => {
                             body={statusBodyTemplate} 
                             filter 
                             filterElement={statusFilterTemplate} />
-                        <Column 
-                            field="activity" 
-                            header="Activity" 
-                            showFilterMatchModes={false} 
-                            style={{ minWidth: '12rem' }} 
-                            body={activityBodyTemplate} 
-                            filter 
-                            filterElement={activityFilterTemplate} />
-                        <Column 
-                            field="verified" 
-                            header="Verified" 
-                            dataType="boolean" 
-                            bodyClassName="text-center" 
-                            style={{ minWidth: '8rem' }} 
-                            body={verifiedBodyTemplate} 
-                            filter 
-                            filterElement={verifiedFilterTemplate} />
                     </DataTable>
                 </div>
             </div>

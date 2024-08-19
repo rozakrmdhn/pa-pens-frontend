@@ -7,20 +7,15 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { CustomerService } from '@/demo/service/CustomerService';
+import { MahasiswaService } from '@/demo/service/MahasiswaService';
 import { Demo } from '@/types';
 import { Calendar } from 'primereact/calendar';
-import { InputNumber } from 'primereact/inputnumber';
 import { Dropdown } from 'primereact/dropdown';
-import { ProgressBar } from 'primereact/progressbar';
-import { Slider } from 'primereact/slider';
-import { TriStateCheckbox } from 'primereact/tristatecheckbox';
-import { classNames } from 'primereact/utils';
 import Link from 'next/link';
 
 const Pengajuan = () => {
     const router = useRouter();
-    const [customers, setCustomers] = useState<Demo.Customer[]>([]);
+    const [customers, setMahasiswa] = useState<Demo.Customer[]>([]);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -32,7 +27,7 @@ const Pengajuan = () => {
         { label: 'Pengajuan', command: () => router.push('/pengajuan') }
     ];
 
-    const getCustomers = (data: Demo.Customer[]) => {
+    const getMahasiswa = (data: Demo.Customer[]) => {
         return [...(data || [])].map((d) => {
             d.date = new Date(d.date);
             return d;
@@ -44,13 +39,6 @@ const Pengajuan = () => {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
-        });
-    };
-
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD'
         });
     };
 
@@ -112,8 +100,8 @@ const Pengajuan = () => {
     };
 
     useEffect(() => {
-        CustomerService.getCustomersSmall().then((data) => {
-            setCustomers(getCustomers(data));
+        MahasiswaService.getMahasiswa().then((data) => {
+            setMahasiswa(getMahasiswa(data));
             setLoading(false);
         });
 
@@ -126,12 +114,6 @@ const Pengajuan = () => {
     const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         return <Calendar value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />;
     };
-    const balanceBodyTemplate = (rowData: Demo.Customer) => {
-        return formatCurrency(rowData.balance as number);
-    };
-    const balanceFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <InputNumber value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} mode="currency" currency="USD" locale="en-US" />;
-    };
     const statusBodyTemplate = (rowData: Demo.Customer) => {
         return <span className={`customer-badge status-${rowData.status}`}>{rowData.status}</span>;
     };
@@ -140,33 +122,6 @@ const Pengajuan = () => {
     };
     const statusItemTemplate = (option: any) => {
         return <span className={`customer-badge status-${option}`}>{option}</span>;
-    };
-    const activityBodyTemplate = (rowData: Demo.Customer) => {
-        return <ProgressBar value={rowData.activity} showValue={false} style={{ height: '.5rem' }}></ProgressBar>;
-    };
-    const activityFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return (
-            <React.Fragment>
-                <Slider value={options.value} onChange={(e) => options.filterCallback(e.value)} range className="m-3"></Slider>
-                <div className="flex align-items-center justify-content-between px-2">
-                    <span>{options.value ? options.value[0] : 0}</span>
-                    <span>{options.value ? options.value[1] : 100}</span>
-                </div>
-            </React.Fragment>
-        );
-    };
-    const verifiedBodyTemplate = (rowData: Demo.Customer) => {
-        return (
-            <i
-                className={classNames('pi', {
-                    'text-green-500 pi-check-circle': rowData.verified,
-                    'text-pink-500 pi-times-circle': !rowData.verified
-                })}
-            ></i>
-        );
-    };
-    const verifiedFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <TriStateCheckbox value={options.value} onChange={(e) => options.filterCallback(e.value)} />;
     };
 
     const header = renderHeader();
@@ -196,45 +151,38 @@ const Pengajuan = () => {
                         emptyMessage="No customers found."
                         header={header}
                     >
+                        <Column
+                            field="nrp"
+                            header="NRP" />
                         <Column 
                             field="name" 
-                            header="Name" 
+                            header="Nama" 
                             filter 
                             filterPlaceholder="Search by name" 
                             style={{ minWidth: '12rem' }} />
                         <Column 
-                            header="Date" 
+                            header="Tanggal" 
                             filterField="date" 
                             dataType="date" 
                             style={{ minWidth: '10rem' }} 
                             body={dateBodyTemplate} 
                             filter 
                             filterElement={dateFilterTemplate} />
+                        <Column
+                            field="company"
+                            header="Tempat KP" />
                         <Column 
                             field="status" 
                             header="Status" 
-                            filterMenuStyle={{ width: '14rem' }} 
-                            style={{ minWidth: '12rem' }} 
+                            filterMenuStyle={{ width: '12rem' }} 
+                            style={{ minWidth: '10rem' }} 
                             body={statusBodyTemplate} 
                             filter 
                             filterElement={statusFilterTemplate} />
-                        <Column 
-                            field="activity" 
-                            header="Activity" 
-                            showFilterMatchModes={false} 
-                            style={{ minWidth: '12rem' }} 
-                            body={activityBodyTemplate} 
-                            filter 
-                            filterElement={activityFilterTemplate} />
-                        <Column 
-                            field="verified" 
-                            header="Verified" 
-                            dataType="boolean" 
-                            bodyClassName="text-center" 
-                            style={{ minWidth: '8rem' }} 
-                            body={verifiedBodyTemplate} 
-                            filter 
-                            filterElement={verifiedFilterTemplate} />
+                        <Column
+                            header="Actions"
+                            style={{ minWidth: '10rem' }}
+                            />
                     </DataTable>
                 </div>
             </div>

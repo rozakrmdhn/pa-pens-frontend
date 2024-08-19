@@ -23,8 +23,8 @@ const PengaturanProfil = () => {
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-                <div className='flex justify-content-between mb-3'>
-                    <h5 className='pt-2'>Pengaturan</h5>
+                <div className="flex justify-content-between my-1">
+                    <h5>Pengaturan</h5>
                 </div>
                 <div className="card p-3">
                     Pengaturan Profil
