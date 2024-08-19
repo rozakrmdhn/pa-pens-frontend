@@ -10,9 +10,9 @@ const PengajuanForm = () => {
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
-        { label: 'Magang KP' },
+        { label: 'Magang' },
         { label: 'Pengajuan', command: () => router.push('/pengajuan') },
-        { label: 'Form', command: () => router.push('/form') }
+        { label: 'Create', command: () => router.push('/create') }
     ];
 
     useEffect(() => {
@@ -25,11 +25,11 @@ const PengajuanForm = () => {
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-                <div className='flex justify-content-between my-1'>
-                    <h5 className='pt-2'>Pengaturan</h5>
+                <div className="flex justify-content-between my-1">
+                    <h5>Pendaftaran Kerja Praktek</h5>
                 </div>
                 <div className="card p-3">
-                    Pengaturan Keamanan
+                    Konten
                 </div>
             </div>
         </div>

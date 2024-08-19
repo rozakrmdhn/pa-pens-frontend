@@ -28,7 +28,7 @@ const Pengajuan = () => {
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
-        { label: 'Magang KP' },
+        { label: 'Magang' },
         { label: 'Pengajuan', command: () => router.push('/pengajuan') }
     ];
 
@@ -177,7 +177,7 @@ const Pengajuan = () => {
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-                <div className='flex justify-content-between my-1'>
+                <div className="flex justify-content-between my-1">
                     <h5>Pengajuan KP</h5>
                     <Link href="/pengajuan/create"><i className='pi pi-plus mr-2'></i>Buat Pengajuan KP</Link>
                 </div>

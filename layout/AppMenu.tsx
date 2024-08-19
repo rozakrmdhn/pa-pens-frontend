@@ -37,7 +37,7 @@ const AppMenu = () => {
             items: [
                 { label: 'Profil', icon: 'pi pi-fw pi-user', to: '/pengaturan/profil'},
                 { label: 'Keamanan', icon: 'pi pi-fw pi-lock', to: '/pengaturan/keamanan'},
-                { label: 'Logout', icon: 'pi pi-fw pi-sign-out', to: '/logout'}
+                { label: 'Logout', icon: 'pi pi-fw pi-sign-out', to: '/'}
             ]
         },
         // {
