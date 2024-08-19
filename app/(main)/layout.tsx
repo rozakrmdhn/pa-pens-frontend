@@ -6,16 +6,16 @@ interface AppLayoutProps {
 }
 
 export const metadata: Metadata = {
-    title: 'PrimeReact Sakai',
+    title: 'Aplikasi Magang KP 2.0 | Politeknik Elektronika Negeri Surabaya',
     description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.',
     robots: { index: false, follow: false },
     viewport: { initialScale: 1, width: 'device-width' },
     openGraph: {
         type: 'website',
-        title: 'PrimeReact SAKAI-REACT',
-        url: 'https://sakai.primereact.org/',
+        title: 'Aplikas Magang KP 2.0',
+        url: 'http://rozakrmdhn.my.id',
         description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.',
-        images: ['https://www.primefaces.org/static/social/sakai-react.png'],
+        images: ['https://www.pens.ac.id/wp-content/uploads/2018/02/cropped-cropped-logo1_1-3-192x192.png'],
         ttl: 604800
     },
     icons: {

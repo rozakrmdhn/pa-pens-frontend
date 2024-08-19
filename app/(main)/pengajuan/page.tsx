@@ -16,6 +16,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Slider } from 'primereact/slider';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
+import Link from 'next/link';
 
 const Pengajuan = () => {
     const router = useRouter();
@@ -176,9 +177,9 @@ const Pengajuan = () => {
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-                <div className='flex justify-content-between mb-3'>
-                    <h5 className='pt-2'>Pengajuan KP</h5>
-                    <Button label="Buat Pengajuan KP" icon="pi pi-plus" size="small" />
+                <div className='flex justify-content-between my-1'>
+                    <h5>Pengajuan KP</h5>
+                    <Link href="/pengajuan/create"><i className='pi pi-plus mr-2'></i>Buat Pengajuan KP</Link>
                 </div>
                 <div className="card p-3">
                 <DataTable
