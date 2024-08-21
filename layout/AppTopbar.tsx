@@ -21,8 +21,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     return (
         <div className="layout-topbar">
             <Link href="/" className="layout-topbar-logo">
-                <img src={`https://reg.mbkm.pens.ac.id/assets/dist/img/logo_pens.png`} height={'35px'} alt="logo" />
-                <span className='ml-1'>Magang PENS</span>
+                <img className='ml-1' src={`https://reg.mbkm.pens.ac.id/assets/dist/img/logo_pens.png`} height={'35px'} alt="logo" />
+                <span style={{ color: '#ffb300' }} className='ml-2 mr-1'>e-Magang</span><span>PENS</span>
             </Link>
 
             <button ref={menubuttonRef} type="button" className="p-link layout-menu-button layout-topbar-button" onClick={onMenuToggle}>
@@ -34,10 +34,6 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             </button>
 
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-                <button type="button" className="p-link layout-topbar-button">
-                    <i className="pi pi-calendar"></i>
-                    <span>Calendar</span>
-                </button>
                 <button type="button" className="p-link layout-topbar-button">
                     <i className="pi pi-user"></i>
                     <span>Profile</span>

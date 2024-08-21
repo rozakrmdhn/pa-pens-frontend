@@ -32,13 +32,20 @@ const Example = () => {
                 <div className="flex justify-content-between my-1">
                     <h5>Hi, Abdul Rozak R</h5>
                 </div>
-                <div className="card p-3">
+                <div className="card p-3 mb-0">
                     <Message 
                     style={{ border: 'solid #696cff', borderWidth: '0 0 0 6px', color: '#696cff' }}
                     className="border-primary w-full justify-content-start" 
                     severity="info"
                     text={content}
                     />
+                    <div className="mt-2">
+                        <h5 className="pt-2 mb-1">Entity Relationship Diagram</h5>
+                        <a href="https://docs.google.com/spreadsheets/d/1-k7Wdst_y4gTMAfNAll6cxB6Dn6AS7jN_UlaCJob5Hc/edit?usp=sharing" target="_blank">Source Google Sheet</a>
+                        <div className="mt-2">
+                            <iframe className="h-screen w-full" src="https://docs.google.com/spreadsheets/d/1-k7Wdst_y4gTMAfNAll6cxB6Dn6AS7jN_UlaCJob5Hc/pubhtml"></iframe>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
