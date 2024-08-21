@@ -176,24 +176,11 @@ declare namespace Demo {
     // DosenService
     type Dosen = {
         id?: number;
-        name?: string;
-        country?: ICountryObject;
-        company?: string;
-        date: Date;
-        status?: string;
-        activity?: number;
-        balance?: number | string;
-        verified?: boolean;
-        amount?: number;
-        price?: number;
-        rating?: number;
-        image?: string;
-        orders?: Demo.Dosen[];
-        inventoryStatus?: string;
-        representative: {
-            name: string;
-            image: string;
-        };
+        nama?: string;
+        kelamin?: string;
+        email?: string;
+        ho_hp: string;
+        alamat?: string;
     };
 
     // MahasiswaService

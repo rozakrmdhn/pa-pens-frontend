@@ -5,17 +5,9 @@ import { BreadCrumb } from "primereact/breadcrumb";
 import { useRouter } from 'next/navigation';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
+import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { CustomerService } from '@/demo/service/CustomerService';
 import { Demo } from '@/types';
-import { Calendar } from 'primereact/calendar';
-import { InputNumber } from 'primereact/inputnumber';
-import { Dropdown } from 'primereact/dropdown';
-import { ProgressBar } from 'primereact/progressbar';
-import { Slider } from 'primereact/slider';
-import { TriStateCheckbox } from 'primereact/tristatecheckbox';
-import { classNames } from 'primereact/utils';
 import { DosenService } from '@/demo/service/DosenService';
 
 const DosenPembimbing = () => {
@@ -34,57 +26,16 @@ const DosenPembimbing = () => {
 
     const getDosen = (data: Demo.Dosen[]) => {
         return [...(data || [])].map((d) => {
-            d.date = new Date(d.date);
             return d;
-        });
-    };
-
-    const formatDate = (value: Date) => {
-        return value.toLocaleDateString('en-US', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
-
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD'
         });
     };
 
     const initFilters = () => {
         setFilters({
             global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-            name: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-            },
-            'country.name': {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-            },
-            representative: { value: null, matchMode: FilterMatchMode.IN },
-            date: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }]
-            },
-            balance: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
-            },
-            status: {
-                operator: FilterOperator.OR,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
-            },
-            activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
-            verified: { value: null, matchMode: FilterMatchMode.EQUALS }
         });
         setGlobalFilterValue('');
     };
-
-    const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
     const clearFilter = () => {
         initFilters();
@@ -120,55 +71,6 @@ const DosenPembimbing = () => {
         initFilters();
     }, []);
 
-    const dateBodyTemplate = (rowData: Demo.Customer) => {
-        return formatDate(rowData.date);
-    };
-    const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <Calendar value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />;
-    };
-    const balanceBodyTemplate = (rowData: Demo.Customer) => {
-        return formatCurrency(rowData.balance as number);
-    };
-    const balanceFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <InputNumber value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} mode="currency" currency="USD" locale="en-US" />;
-    };
-    const statusBodyTemplate = (rowData: Demo.Customer) => {
-        return <span className={`customer-badge status-${rowData.status}`}>{rowData.status}</span>;
-    };
-    const statusFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <Dropdown value={options.value} options={statuses} onChange={(e) => options.filterCallback(e.value, options.index)} itemTemplate={statusItemTemplate} placeholder="Select a Status" className="p-column-filter" showClear />;
-    };
-    const statusItemTemplate = (option: any) => {
-        return <span className={`customer-badge status-${option}`}>{option}</span>;
-    };
-    const activityBodyTemplate = (rowData: Demo.Customer) => {
-        return <ProgressBar value={rowData.activity} showValue={false} style={{ height: '.5rem' }}></ProgressBar>;
-    };
-    const activityFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return (
-            <React.Fragment>
-                <Slider value={options.value} onChange={(e) => options.filterCallback(e.value)} range className="m-3"></Slider>
-                <div className="flex align-items-center justify-content-between px-2">
-                    <span>{options.value ? options.value[0] : 0}</span>
-                    <span>{options.value ? options.value[1] : 100}</span>
-                </div>
-            </React.Fragment>
-        );
-    };
-    const verifiedBodyTemplate = (rowData: Demo.Customer) => {
-        return (
-            <i
-                className={classNames('pi', {
-                    'text-green-500 pi-check-circle': rowData.verified,
-                    'text-pink-500 pi-times-circle': !rowData.verified
-                })}
-            ></i>
-        );
-    };
-    const verifiedFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <TriStateCheckbox value={options.value} onChange={(e) => options.filterCallback(e.value)} />;
-    };
-
     const header = renderHeader();
 
     return (
@@ -192,48 +94,37 @@ const DosenPembimbing = () => {
                         filterDisplay="menu"
                         loading={loading}
                         responsiveLayout="scroll"
-                        emptyMessage="No customers found."
+                        emptyMessage="No data found."
                         header={header}
                     >
                         <Column 
-                            field="name" 
+                            field="nama" 
                             header="Name" 
-                            filter 
-                            filterPlaceholder="Search by name" 
+                            filter
                             style={{ minWidth: '12rem' }} />
                         <Column 
-                            header="Date" 
-                            filterField="date" 
-                            dataType="date" 
-                            style={{ minWidth: '10rem' }} 
-                            body={dateBodyTemplate} 
-                            filter 
-                            filterElement={dateFilterTemplate} />
-                        <Column 
-                            field="status" 
-                            header="Status" 
-                            filterMenuStyle={{ width: '14rem' }} 
-                            style={{ minWidth: '12rem' }} 
-                            body={statusBodyTemplate} 
-                            filter 
-                            filterElement={statusFilterTemplate} />
-                        <Column 
-                            field="activity" 
-                            header="Activity" 
-                            showFilterMatchModes={false} 
-                            style={{ minWidth: '12rem' }} 
-                            body={activityBodyTemplate} 
-                            filter 
-                            filterElement={activityFilterTemplate} />
-                        <Column 
-                            field="verified" 
-                            header="Verified" 
-                            dataType="boolean" 
+                            field="kelamin"
+                            header="Kelamin"
                             bodyClassName="text-center" 
                             style={{ minWidth: '8rem' }} 
-                            body={verifiedBodyTemplate} 
-                            filter 
-                            filterElement={verifiedFilterTemplate} />
+                            filter  />
+                        <Column 
+                            field="email" 
+                            header="Email" 
+                            filterMenuStyle={{ width: '14rem' }} 
+                            style={{ minWidth: '12rem' }} 
+                            filter  />
+                        <Column 
+                            field="no_hp" 
+                            header="Nomor HP" 
+                            showFilterMatchModes={false} 
+                            style={{ minWidth: '10rem' }} 
+                            filter  />
+                        <Column 
+                            field="alamat" 
+                            header="Alamat" 
+                            style={{ minWidth: '12rem' }} 
+                            filter />
                     </DataTable>
                 </div>
             </div>
