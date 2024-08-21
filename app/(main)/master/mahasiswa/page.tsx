@@ -31,7 +31,7 @@ const Mahasiswa = () => {
         { label: 'Mahasiwa', command: () => router.push('/master/mahasiswa') }
     ];
 
-    const getMahasiwa = (data: Demo.Dosen[]) => {
+    const getMahasiwa = (data: Demo.Mahasiswa[]) => {
         return [...(data || [])].map((d) => {
             d.date = new Date(d.date);
             return d;
