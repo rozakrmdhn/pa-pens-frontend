@@ -10,9 +10,21 @@ import { Button } from 'primereact/button';
 import { Demo } from '@/types';
 import { DosenService } from '@/services/service/DosenService';
 
+interface Dosen {
+    id?: number;
+    nama?: string;
+    kelamin?: string;
+    email?: string;
+    ho_hp: string;
+    alamat?: string;
+}
+
 const DosenPembimbing = () => {
     const router = useRouter();
-    const [dosen, setDosen] = useState<Demo.Dosen[]>([]);
+    const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
+    const [dosen, setDosen] = useState<Dosen>();
+    const [deleteDosenDialog, setDeleteDosenDialog] = useState<boolean>(false);
+
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
@@ -21,14 +33,8 @@ const DosenPembimbing = () => {
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
         { label: 'Master Data' },
-        { label: 'Dosen Pembimbing', command: () => router.push('/master/dosen-pembimbing') }
+        { label: 'Dosen', command: () => router.push('/master/dosen') }
     ];
-
-    const getDosen = (data: Demo.Dosen[]) => {
-        return [...(data || [])].map((d) => {
-            return d;
-        });
-    };
 
     const initFilters = () => {
         setFilters({
@@ -61,17 +67,43 @@ const DosenPembimbing = () => {
             </div>
         );
     };
+    const header = renderHeader();
+
+    // Action Button
+    const actionBodyTemplate = (rowData: Dosen) => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-pencil" outlined className="mr-2" onClick={() => editDosen(rowData)} />
+                <Button icon="pi pi-trash" outlined severity="danger" onClick={() => confirmDeleteDosen(rowData)} />
+            </React.Fragment>
+        );
+    };
+
+    const editDosen = (dosen: Dosen) => {
+        console.log({ ...dosen });
+    };
+
+    const confirmDeleteDosen = (dosen: Dosen) => {
+        setDosen(dosen);
+        setDeleteDosenDialog(true);
+        console.log({ ...dosen })
+    };
 
     useEffect(() => {
+        // directory : services/service/DosenService
         DosenService.getDosen().then((data) => {
-            setDosen(getDosen(data));
+            setDosens(getData(data));
             setLoading(false);
         });
 
         initFilters();
     }, []);
 
-    const header = renderHeader();
+    const getData = (data: Demo.Dosen[]) => {
+        return [...(data || [])].map((d) => {
+            return d;
+        });
+    };
 
     return (
         <div className="grid">
@@ -80,11 +112,11 @@ const DosenPembimbing = () => {
             </div>
             <div className="col-12">
                 <div className="flex justify-content-between my-1">
-                    <h5>Data Dosen Pembimbing</h5>
+                    <h5>Data Dosen</h5>
                 </div>
                 <div className="card p-3">
                 <DataTable
-                        value={dosen}
+                        value={dosens}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -125,6 +157,7 @@ const DosenPembimbing = () => {
                             header="Alamat" 
                             style={{ minWidth: '12rem' }} 
                             filter />
+                        <Column bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ minWidth: '8rem' }}></Column>
                     </DataTable>
                 </div>
             </div>

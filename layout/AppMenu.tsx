@@ -28,7 +28,7 @@ const AppMenu = () => {
         {
             label: 'Master Data',
             items: [
-                { label: 'Dosen', icon: 'pi pi-fw pi-database', to: '/master/dosen-pembimbing'},
+                { label: 'Dosen', icon: 'pi pi-fw pi-database', to: '/master/dosen'},
                 { label: 'Mahasiswa', icon: 'pi pi-fw pi-database', to: '/master/mahasiswa'},
                 { label: 'Mitra', icon: 'pi pi-fw pi-database', to: '/master/mitra'},
             ]
