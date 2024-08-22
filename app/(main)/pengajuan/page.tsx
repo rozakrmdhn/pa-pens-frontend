@@ -7,7 +7,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { MahasiswaService } from '@/demo/service/MahasiswaService';
+import { MahasiswaService } from '@/services/service/MahasiswaService';
 import { Demo } from '@/types';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';

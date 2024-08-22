@@ -8,7 +8,7 @@ import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Demo } from '@/types';
-import { DosenService } from '@/demo/service/DosenService';
+import { DosenService } from '@/services/service/DosenService';
 
 const DosenPembimbing = () => {
     const router = useRouter();

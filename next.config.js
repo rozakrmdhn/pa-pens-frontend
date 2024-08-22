@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     env: {
-        API_HOST: 'https://rozak.saggaserv.my.id',
+        API_HOST: 'https://rozak.saggaserv.my.id/api',
     }
 }
 

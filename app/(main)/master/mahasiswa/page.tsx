@@ -15,7 +15,7 @@ import { ProgressBar } from 'primereact/progressbar';
 import { Slider } from 'primereact/slider';
 import { TriStateCheckbox } from 'primereact/tristatecheckbox';
 import { classNames } from 'primereact/utils';
-import { MahasiswaService } from '@/demo/service/MahasiswaService';
+import { MahasiswaService } from '@/services/service/MahasiswaService';
 
 const Mahasiswa = () => {
     const router = useRouter();
