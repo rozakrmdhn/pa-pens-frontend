@@ -15,7 +15,7 @@ const Example = () => {
 
     const content = (
         <div className="flex align-items-center">
-            <div className="ml-1">Pengajuan sedang diproses</div>
+            <div className="ml-1">Entity Relationship Diagram</div>
         </div>
     );
 
@@ -39,11 +39,14 @@ const Example = () => {
                     severity="info"
                     text={content}
                     />
-                    <div className="mt-2">
-                        <h5 className="pt-2 mb-1">Entity Relationship Diagram</h5>
-                        <a href="https://docs.google.com/spreadsheets/d/1-k7Wdst_y4gTMAfNAll6cxB6Dn6AS7jN_UlaCJob5Hc/edit?usp=sharing" target="_blank">Source Google Sheet</a>
+                    <div className="mt-3">
+                        {/* <a href="https://docs.google.com/spreadsheets/d/1-k7Wdst_y4gTMAfNAll6cxB6Dn6AS7jN_UlaCJob5Hc/edit?usp=sharing" target="_blank">Source Google Sheet</a>
                         <div className="mt-2">
                             <iframe className="h-screen w-full" src="https://docs.google.com/spreadsheets/d/1-k7Wdst_y4gTMAfNAll6cxB6Dn6AS7jN_UlaCJob5Hc/pubhtml"></iframe>
+                        </div> */}
+
+                        <div className="mt-2">
+                            <iframe className="h-screen w-full" src="https://dbdiagram.io/e/64ba72a302bd1c4a5e7954fc/66dfbeb8550cd927eab1caac"></iframe>
                         </div>
                     </div>
                 </div>
