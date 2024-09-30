@@ -7,20 +7,26 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
+import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
+import { Toast } from 'primereact/toast';
 import { Demo } from '@/types';
 import { DosenService } from '@/services/service/DosenService';
+import DosenDialog from './dosenDialog';
 
 interface Dosen {
     id?: number;
     nama?: string;
-    kelamin?: string;
+    jenis_kelamin?: string;
     email?: string;
-    ho_hp: string;
+    nomor_hp?: string;
     alamat?: string;
 }
 
-const DosenPembimbing = () => {
+const Dosen = () => {
     const router = useRouter();
+    const toast = useRef(null);
+    const selectedDosenId = useRef(null);
+
     const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
     const [dosen, setDosen] = useState<Dosen>();
     const [deleteDosenDialog, setDeleteDosenDialog] = useState<boolean>(false);
@@ -28,6 +34,9 @@ const DosenPembimbing = () => {
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
+    
+    const [isDialogVisible, setIsDialogVisible] = useState(false);
+    const [dosenToEdit, setDosenToEdit] = useState<Dosen | null>(null);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -42,11 +51,9 @@ const DosenPembimbing = () => {
         });
         setGlobalFilterValue('');
     };
-
     const clearFilter = () => {
         initFilters();
     };
-
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         let _filters1 = { ...filters };
@@ -55,15 +62,23 @@ const DosenPembimbing = () => {
         setFilters(_filters1);
         setGlobalFilterValue(value);
     };
+    const openNew = () => {
+        setDosenToEdit(null);
+        setIsDialogVisible(true);
+    };
 
+    const openEdit = (dosen: Dosen) => {
+        setDosenToEdit(dosen);
+        setIsDialogVisible(true);
+    };
     const renderHeader = () => {
         return (
             <div className="flex justify-content-between">
-                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter} />
                 <span className="p-input-icon-left">
                     <i className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
+                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" />
                 </span>
+                <Button label="Add" icon="pi pi-plus" onClick={openNew} />
             </div>
         );
     };
@@ -73,37 +88,74 @@ const DosenPembimbing = () => {
     const actionBodyTemplate = (rowData: Dosen) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" outlined className="mr-2" onClick={() => editDosen(rowData)} />
-                <Button icon="pi pi-trash" outlined severity="danger" onClick={() => confirmDeleteDosen(rowData)} />
+                <Button icon="pi pi-pencil" outlined className="mr-2" onClick={() => openEdit(rowData)} />
+                <Button icon="pi pi-trash" outlined severity="danger" onClick={ () => confirmDeleteDosen(rowData) } />
             </React.Fragment>
         );
+    };
+
+    const accept = async () => {
+        if (selectedDosenId.current !== null) {
+            try {
+                await DosenService.deleteDosen(selectedDosenId.current);
+                setDosens(dosens.filter(d => d.id !== selectedDosenId.current));
+                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Dosen deleted successfully', life: 3000 });
+            } catch (error) {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
+            }
+        }
+    }
+    const reject = () => {
+        toast.current?.show({ severity: 'warn', summary: 'Cancelled', detail: 'You have cancelled the deletion', life: 3000 });
+    }
+    const confirmDeleteDosen = (dosen: Dosen) => {
+        selectedDosenId.current = dosen.id;
+        confirmDialog({
+            message: 'Do you want to delete this record?',
+            header: 'Delete Confirmation',
+            icon: 'pi pi-info-circle',
+            acceptClassName: 'p-button-danger',
+            accept,
+            reject
+        });
     };
 
     const editDosen = (dosen: Dosen) => {
         console.log({ ...dosen });
     };
 
-    const confirmDeleteDosen = (dosen: Dosen) => {
-        setDosen(dosen);
-        setDeleteDosenDialog(true);
-        console.log({ ...dosen })
-    };
-
-    useEffect(() => {
-        // directory : services/service/DosenService
-        DosenService.getDosen().then((data) => {
-            setDosens(getData(data));
+    const fetchDosen = async () => {
+        try {
+            DosenService.getDosen().then((data) => {
+                setDosens(getData(data));
+                setLoading(false);
+            });
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch data', life: 3000 });
+        } finally {
             setLoading(false);
-        });
-
-        initFilters();
-    }, []);
+        }
+    };
 
     const getData = (data: Demo.Dosen[]) => {
         return [...(data || [])].map((d) => {
             return d;
         });
     };
+
+    const onSave = (dosen: Dosen) => {
+        if (dosen.id) {
+            setDosens(dosens.map(d => (d.id === dosen.id ? dosen : d)));
+        } else {
+            setDosens([...dosens, dosen]);
+        }
+        setIsDialogVisible(false);
+    };
+
+    useEffect(() => {
+        fetchDosen();
+        initFilters();
+    }, []);
 
     return (
         <div className="grid">
@@ -115,6 +167,8 @@ const DosenPembimbing = () => {
                     <h5>Data Dosen</h5>
                 </div>
                 <div className="card p-3">
+                <Toast ref={toast} />
+                <ConfirmDialog />
                 <DataTable
                         value={dosens}
                         paginator
@@ -131,12 +185,12 @@ const DosenPembimbing = () => {
                     >
                         <Column 
                             field="nama" 
-                            header="Name" 
+                            header="Nama" 
                             filter
                             style={{ minWidth: '12rem' }} />
                         <Column 
-                            field="kelamin"
-                            header="Kelamin"
+                            field="jenis_kelamin"
+                            header="Jenkel"
                             bodyClassName="text-center" 
                             style={{ minWidth: '8rem' }} 
                             filter  />
@@ -147,7 +201,7 @@ const DosenPembimbing = () => {
                             style={{ minWidth: '12rem' }} 
                             filter  />
                         <Column 
-                            field="no_hp" 
+                            field="nomor_hp" 
                             header="Nomor HP" 
                             showFilterMatchModes={false} 
                             style={{ minWidth: '10rem' }} 
@@ -159,10 +213,11 @@ const DosenPembimbing = () => {
                             filter />
                         <Column bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ minWidth: '8rem' }}></Column>
                     </DataTable>
+                    <DosenDialog visible={isDialogVisible} onHide={() => setIsDialogVisible(false)} onSave={onSave} dosenData={dosenToEdit} />
                 </div>
             </div>
         </div>
     );
 };
 
-export default DosenPembimbing;
+export default Dosen;

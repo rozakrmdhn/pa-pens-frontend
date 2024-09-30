@@ -177,9 +177,9 @@ declare namespace Demo {
     type Dosen = {
         id?: number;
         nama?: string;
-        kelamin?: string;
+        jenis_kelamin?: string;
         email?: string;
-        ho_hp: string;
+        nomor_hp: string;
         alamat?: string;
     };
 
