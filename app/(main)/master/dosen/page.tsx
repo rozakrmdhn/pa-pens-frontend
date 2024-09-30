@@ -7,6 +7,8 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
+import { Dropdown } from 'primereact/dropdown';
+import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { Demo } from '@/types';
@@ -33,12 +35,13 @@ const Dosen = () => {
     };
 
     const router = useRouter();
-    const toast = useRef(null);
+    const toast = useRef<Toast>(null);
     const selectedDosenId = useRef<number | null>(null);
 
     const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
-    const [dosen, setDosen] = useState<Dosen>();
-    const [deleteDosenDialog, setDeleteDosenDialog] = useState<boolean>(false);
+    const [dosen, setDosen] = useState<Demo.Dosen>(emptyDosen);
+    const [deleteDosenDialog, setDeleteDosenDialog] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
@@ -56,6 +59,16 @@ const Dosen = () => {
         { label: 'Master Data' },
         { label: 'Dosen', command: () => router.push('/master/dosen') }
     ];
+
+    const genderOptions = [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' }
+    ];
+
+    const handleInputChange = (e: any, field: string) => {
+        const value = e.target.value;
+        setDosen({ ...dosen, [field]: value });
+    };
 
     const initFilters = () => {
         setFilters({
@@ -75,20 +88,20 @@ const Dosen = () => {
         setGlobalFilterValue(value);
     };
     const openNew = () => {
-        setDosenToEdit(null);
-        setIsDialogVisible(true);
-    };
-
-    const openNewDosen = () => {
         setDosen(emptyDosen);
         setSubmitted(false);
-        setProductDialog(true);
+        setDosenDialog(true);
     };
 
-    const openEdit = (dosen: Dosen) => {
-        setDosenToEdit(dosen);
-        setIsDialogVisible(true);
+    const hideDialog = () => {
+        setSubmitted(false);
+        setDosenDialog(false);
     };
+
+    const hideDeleteDosenDialog = () => {
+        setDeleteDosenDialog(false);
+    };
+
     const renderHeader = () => {
         return (
             <div className="flex justify-content-between">
@@ -103,43 +116,25 @@ const Dosen = () => {
     const header = renderHeader();
 
     // Action Button
-    const actionBodyTemplate = (rowData: Dosen) => {
+    const actionBodyTemplate = (rowData: Demo.Dosen) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" outlined className="mr-2" onClick={() => openEdit(rowData)} />
+                <Button icon="pi pi-pencil" outlined className="mr-2" onClick={() => editDosen(rowData)} />
                 <Button icon="pi pi-trash" outlined severity="danger" onClick={ () => confirmDeleteDosen(rowData) } />
             </React.Fragment>
         );
     };
 
-    const accept = async () => {
-        if (selectedDosenId.current !== null) {
-            try {
-                await DosenService.deleteDosen(selectedDosenId.current);
-                setDosens(dosens.filter(d => d.id !== selectedDosenId.current));
-                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Dosen deleted successfully', life: 3000 });
-            } catch (error) {
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
-            }
-        }
-    }
-    const reject = () => {
-        toast.current?.show({ severity: 'warn', summary: 'Cancelled', detail: 'You have cancelled the deletion', life: 3000 });
-    }
-    const confirmDeleteDosen = (dosen: Dosen) => {
-        selectedDosenId.current = dosen.id ?? null;
-        confirmDialog({
-            message: 'Do you want to delete this record?',
-            header: 'Delete Confirmation',
-            icon: 'pi pi-info-circle',
-            acceptClassName: 'p-button-danger',
-            accept,
-            reject
-        });
+    const confirmDeleteDosen = (dosen: Demo.Dosen) => {
+        setDosen({ ...dosen });
+        console.log(dosen);
+        setDeleteDosenDialog(true);
     };
 
-    const editDosen = (dosen: Dosen) => {
-        console.log({ ...dosen });
+    const editDosen = (dosen: Demo.Dosen) => {
+        setDosen({ ...dosen });
+        console.log(dosen);
+        setDosenDialog(true);
     };
 
     const fetchDosen = async () => {
@@ -161,14 +156,57 @@ const Dosen = () => {
         });
     };
 
-    const onSave = (dosen: Dosen) => {
+    const onSave = (dosen: Demo.Dosen) => {
         if (dosen.id) {
             setDosens(dosens.map(d => (d.id === dosen.id ? dosen : d)));
         } else {
             setDosens([...dosens, dosen]);
         }
-        setIsDialogVisible(false);
     };
+    
+    const saveDosen = async () => {
+        setSubmitted(true);
+        try {
+            if (dosen.id) {
+                await DosenService.updateDosen(dosen.id, dosen);  // Update API call
+                toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Dosen updated successfully', life: 3000 });
+            } else {
+                await DosenService.createDosen(dosen);  // Create API call
+                toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Dosen created successfully', life: 3000 });
+            }
+            fetchDosen();  // Re-fetch the updated list
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Dosen', life: 3000 });
+        } finally {
+            setDosenDialog(false);
+        }
+    };
+
+    const deleteDosen = async () => {
+        try {
+            if (dosen.id) {
+                await DosenService.deleteDosen(dosen.id);
+                setDosens(dosens.filter(d => d.id !== dosen.id));
+                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Dosen deleted successfully', life: 3000 });
+            }
+            setDeleteDosenDialog(false);
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
+        }
+    };
+
+    const dialogFooter = (
+        <div>
+            <Button label="Cancel" icon="pi pi-times" onClick={hideDialog} className="p-button-text" />
+            <Button label="Save" icon="pi pi-check" onClick={saveDosen} />
+        </div>
+    );
+    const deleteDosenDialogFooter = (
+        <>
+            <Button label="No" icon="pi pi-times" text onClick={hideDeleteDosenDialog} />
+            <Button label="Yes" icon="pi pi-check" text onClick={deleteDosen} />
+        </>
+    );
 
     useEffect(() => {
         fetchDosen();
@@ -231,7 +269,41 @@ const Dosen = () => {
                             filter />
                         <Column bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ minWidth: '8rem' }}></Column>
                     </DataTable>
-                    <DosenDialog visible={isDialogVisible} onHide={() => setIsDialogVisible(false)} onSave={onSave} dosenData={dosenToEdit} />
+
+                    <Dialog visible={dosenDialog} header={dosen.id ? "Edit Dosen" : "New Dosen"} style={{ width: '50vw' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
+                        <div className="field">
+                            <label htmlFor="nama">Nama</label>
+                            <InputText id="nama" value={dosen.nama || ''} onChange={(e) => handleInputChange(e, 'nama')} />
+                            {submitted && !dosen.nama && <small className="p-invalid">Name is required.</small>}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="jenis_kelamin">Jenis Kelamin</label>
+                            <Dropdown id="jenis_kelamin" value={dosen.jenis_kelamin} options={genderOptions} onChange={(e) => handleInputChange(e, 'jenis_kelamin')} placeholder="Select Gender" />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="email">Email</label>
+                            <InputText id="email" value={dosen.email || ''} onChange={(e) => handleInputChange(e, 'email')} />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="nomor_hp">Nomor HP</label>
+                            <InputText id="nomor_hp" value={dosen.nomor_hp || ''} onChange={(e) => handleInputChange(e, 'nomor_hp')} />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="alamat">Alamat</label>
+                            <InputText id="alamat" value={dosen.alamat || ''} onChange={(e) => handleInputChange(e, 'alamat')} />
+                        </div>
+                    </Dialog>
+
+                    <Dialog visible={deleteDosenDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteDosenDialogFooter} onHide={hideDeleteDosenDialog}>
+                        <div className="flex align-items-center justify-content-center">
+                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            {dosen && (
+                                <span>
+                                    Are you sure you want to delete <b>{dosen.nama}</b>?
+                                </span>
+                            )}
+                        </div>
+                    </Dialog>
                 </div>
             </div>
         </div>

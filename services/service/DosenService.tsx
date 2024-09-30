@@ -6,7 +6,7 @@ export const DosenService = {
         return axios.get(`${process.env.API_HOST}/dosen`)
             .then((response) => response.data.data as Demo.Dosen[])
     },
-    deleteDosen(id: number) {
+    deleteDosen(id: string) {
         return axios.delete(`${process.env.API_HOST}/dosen/${id}`)
             .then((response) => response.data)
             .catch((error) => {
@@ -22,7 +22,7 @@ export const DosenService = {
                 throw error;
             });
     },
-    updateDosen(id: number, dosenData: Demo.Dosen) {
+    updateDosen(id: string, dosenData: Demo.Dosen) {
         return axios.put(`${process.env.API_HOST}/dosen/${id}`, dosenData)
             .then((response) => response.data)
             .catch((error) => {
