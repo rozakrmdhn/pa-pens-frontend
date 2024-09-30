@@ -23,9 +23,18 @@ interface Dosen {
 }
 
 const Dosen = () => {
+    let emptyDosen: Demo.Dosen = {
+        id: '',
+        nama: '',
+        jenis_kelamin: '',
+        email: '',
+        nomor_hp: '',
+        alamat: ''
+    };
+
     const router = useRouter();
     const toast = useRef(null);
-    const selectedDosenId = useRef(null);
+    const selectedDosenId = useRef<number | null>(null);
 
     const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
     const [dosen, setDosen] = useState<Dosen>();
@@ -37,6 +46,9 @@ const Dosen = () => {
     
     const [isDialogVisible, setIsDialogVisible] = useState(false);
     const [dosenToEdit, setDosenToEdit] = useState<Dosen | null>(null);
+
+    // Dialog
+    const [dosenDialog, setDosenDialog] = useState(false);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -65,6 +77,12 @@ const Dosen = () => {
     const openNew = () => {
         setDosenToEdit(null);
         setIsDialogVisible(true);
+    };
+
+    const openNewDosen = () => {
+        setDosen(emptyDosen);
+        setSubmitted(false);
+        setProductDialog(true);
     };
 
     const openEdit = (dosen: Dosen) => {
@@ -109,7 +127,7 @@ const Dosen = () => {
         toast.current?.show({ severity: 'warn', summary: 'Cancelled', detail: 'You have cancelled the deletion', life: 3000 });
     }
     const confirmDeleteDosen = (dosen: Dosen) => {
-        selectedDosenId.current = dosen.id;
+        selectedDosenId.current = dosen.id ?? null;
         confirmDialog({
             message: 'Do you want to delete this record?',
             header: 'Delete Confirmation',

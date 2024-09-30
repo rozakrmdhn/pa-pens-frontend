@@ -175,11 +175,11 @@ declare namespace Demo {
 
     // DosenService
     type Dosen = {
-        id?: number;
+        id?: string | undefined;
         nama?: string;
         jenis_kelamin?: string;
         email?: string;
-        nomor_hp: string;
+        nomor_hp?: string;
         alamat?: string;
     };
 
