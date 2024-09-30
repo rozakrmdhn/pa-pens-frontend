@@ -35,6 +35,7 @@ const Dosen = () => {
 
     const router = useRouter();
     const toast = useRef<Toast>(null);
+    const dt = useRef<DataTable<any>>(null);
     const selectedDosenId = useRef<number | null>(null);
 
     const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
@@ -45,9 +46,6 @@ const Dosen = () => {
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
-    
-    const [isDialogVisible, setIsDialogVisible] = useState(false);
-    const [dosenToEdit, setDosenToEdit] = useState<Dosen | null>(null);
 
     // Dialog
     const [dosenDialog, setDosenDialog] = useState(false);
@@ -108,7 +106,7 @@ const Dosen = () => {
                     <i className="pi pi-search" />
                     <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" />
                 </span>
-                <Button label="Add" icon="pi pi-plus" onClick={openNew} />
+                <Button icon="pi pi-plus" onClick={openNew} />
             </div>
         );
     };
@@ -118,8 +116,8 @@ const Dosen = () => {
     const actionBodyTemplate = (rowData: Demo.Dosen) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" outlined className="mr-2" onClick={() => editDosen(rowData)} />
-                <Button icon="pi pi-trash" outlined severity="danger" onClick={ () => confirmDeleteDosen(rowData) } />
+                <Button icon="pi pi-pencil" outlined className="mr-2" size="small" onClick={() => editDosen(rowData)} />
+                <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={ () => confirmDeleteDosen(rowData) } />
             </React.Fragment>
         );
     };
@@ -165,19 +163,21 @@ const Dosen = () => {
     
     const saveDosen = async () => {
         setSubmitted(true);
-        try {
-            if (dosen.id) {
-                await DosenService.updateDosen(dosen.id, dosen);  // Update API call
-                toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Dosen updated successfully', life: 3000 });
-            } else {
-                await DosenService.createDosen(dosen);  // Create API call
-                toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Dosen created successfully', life: 3000 });
+        if (dosen.nama?.trim()) {
+            try {
+                if (dosen.id) {
+                    await DosenService.updateDosen(dosen.id, dosen);  // Update API call
+                    toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Dosen updated successfully', life: 3000 });
+                } else {
+                    await DosenService.createDosen(dosen);  // Create API call
+                    toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Dosen created successfully', life: 3000 });
+                }
+                fetchDosen();  // Re-fetch the updated list
+            } catch (error) {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Dosen', life: 3000 });
+            } finally {
+                setDosenDialog(false);
             }
-            fetchDosen();  // Re-fetch the updated list
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Dosen', life: 3000 });
-        } finally {
-            setDosenDialog(false);
         }
     };
 
@@ -196,14 +196,14 @@ const Dosen = () => {
 
     const dialogFooter = (
         <div>
-            <Button label="Cancel" icon="pi pi-times" onClick={hideDialog} className="p-button-text" />
-            <Button label="Save" icon="pi pi-check" onClick={saveDosen} />
+            <Button label="Cancel" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
+            <Button label="Save" icon="pi pi-check" size="small" onClick={saveDosen} />
         </div>
     );
     const deleteDosenDialogFooter = (
         <>
-            <Button label="No" icon="pi pi-times" text onClick={hideDeleteDosenDialog} />
-            <Button label="Yes" icon="pi pi-check" text onClick={deleteDosen} />
+            <Button label="No" icon="pi pi-times" size="small" text onClick={hideDeleteDosenDialog} />
+            <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteDosen} />
         </>
     );
 
@@ -225,55 +225,60 @@ const Dosen = () => {
                 <Toast ref={toast} />
                 <ConfirmDialog />
                 <DataTable
-                        value={dosens}
-                        paginator
-                        className="p-datatable-gridlines"
-                        showGridlines
-                        rows={10}
-                        dataKey="id"
-                        filters={filters}
-                        filterDisplay="menu"
-                        loading={loading}
-                        responsiveLayout="scroll"
-                        emptyMessage="No data found."
-                        header={header}
-                    >
+                    ref={dt}
+                    value={dosens}
+                    paginator
+                    className="p-datatable-gridlines"
+                    showGridlines
+                    rows={10}
+                    rowsPerPageOptions={[5, 10, 25]}
+                    dataKey="id"
+                    filters={filters}
+                    filterDisplay="menu"
+                    loading={loading}
+                    responsiveLayout="scroll"
+                    emptyMessage="No data found."
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
+                    header={header}
+                >
                         <Column 
                             field="nama" 
                             header="Nama" 
                             filter
+                            sortable
                             style={{ minWidth: '12rem' }} />
                         <Column 
                             field="jenis_kelamin"
                             header="Jenkel"
                             bodyClassName="text-center" 
                             style={{ minWidth: '8rem' }} 
-                            filter  />
+                            sortable  />
                         <Column 
                             field="email" 
                             header="Email" 
                             filterMenuStyle={{ width: '14rem' }} 
                             style={{ minWidth: '12rem' }} 
-                            filter  />
+                            sortable  />
                         <Column 
                             field="nomor_hp" 
                             header="Nomor HP" 
                             showFilterMatchModes={false} 
                             style={{ minWidth: '10rem' }} 
-                            filter  />
+                            sortable  />
                         <Column 
                             field="alamat" 
                             header="Alamat" 
                             style={{ minWidth: '12rem' }} 
-                            filter />
-                        <Column bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ minWidth: '8rem' }}></Column>
+                            sortable />
+                        <Column bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ minWidth: '10rem' }}></Column>
                     </DataTable>
 
-                    <Dialog visible={dosenDialog} header={dosen.id ? "Edit Dosen" : "New Dosen"} style={{ width: '50vw' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
+                    <Dialog visible={dosenDialog} header={dosen.id ? "Edit Dosen" : "New Dosen"} style={{ width: '450px' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
                         <div className="field">
                             <label htmlFor="nama">Nama</label>
-                            <InputText id="nama" value={dosen.nama || ''} onChange={(e) => handleInputChange(e, 'nama')} />
-                            {submitted && !dosen.nama && <small className="p-invalid">Name is required.</small>}
+                            <InputText id="nama" autoComplete="off" aria-describedby="nama-help" required value={dosen.nama || ''} onChange={(e) => handleInputChange(e, 'nama')} />
+                            {submitted && !dosen.nama && <small id="nama-help" className="p-error">Name is required.</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="jenis_kelamin">Jenis Kelamin</label>
@@ -281,15 +286,15 @@ const Dosen = () => {
                         </div>
                         <div className="field">
                             <label htmlFor="email">Email</label>
-                            <InputText id="email" value={dosen.email || ''} onChange={(e) => handleInputChange(e, 'email')} />
+                            <InputText id="email" autoComplete="off" value={dosen.email || ''} onChange={(e) => handleInputChange(e, 'email')} />
                         </div>
                         <div className="field">
                             <label htmlFor="nomor_hp">Nomor HP</label>
-                            <InputText id="nomor_hp" value={dosen.nomor_hp || ''} onChange={(e) => handleInputChange(e, 'nomor_hp')} />
+                            <InputText id="nomor_hp" autoComplete="off" value={dosen.nomor_hp || ''} onChange={(e) => handleInputChange(e, 'nomor_hp')} />
                         </div>
                         <div className="field">
                             <label htmlFor="alamat">Alamat</label>
-                            <InputText id="alamat" value={dosen.alamat || ''} onChange={(e) => handleInputChange(e, 'alamat')} />
+                            <InputText id="alamat" autoComplete="off" value={dosen.alamat || ''} onChange={(e) => handleInputChange(e, 'alamat')} />
                         </div>
                     </Dialog>
 
