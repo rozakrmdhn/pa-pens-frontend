@@ -13,7 +13,6 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { Demo } from '@/types';
 import { DosenService } from '@/services/service/DosenService';
-import DosenDialog from './dosenDialog';
 
 interface Dosen {
     id?: number;
