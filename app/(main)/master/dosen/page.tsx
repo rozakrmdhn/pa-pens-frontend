@@ -14,16 +14,12 @@ import { Toast } from 'primereact/toast';
 import { Demo } from '@/types';
 import { DosenService } from '@/services/service/DosenService';
 
-interface Dosen {
-    id?: number;
-    nama?: string;
-    jenis_kelamin?: string;
-    email?: string;
-    nomor_hp?: string;
-    alamat?: string;
-}
-
 const Dosen = () => {
+    useEffect(() => {
+        fetchDosen();
+        initFilters();
+    }, []);
+
     let emptyDosen: Demo.Dosen = {
         id: '',
         nama: '',
@@ -36,7 +32,8 @@ const Dosen = () => {
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const selectedDosenId = useRef<number | null>(null);
+    const [rows, setRows] = useState(10);
+    const [loading, setLoading] = useState(true);
 
     const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
     const [dosen, setDosen] = useState<Demo.Dosen>(emptyDosen);
@@ -44,7 +41,6 @@ const Dosen = () => {
     const [submitted, setSubmitted] = useState(false);
 
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
-    const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
 
     // Dialog
@@ -57,6 +53,7 @@ const Dosen = () => {
         { label: 'Dosen', command: () => router.push('/master/dosen') }
     ];
 
+    // Default Value Option
     const genderOptions = [
         { label: 'Male', value: 'Male' },
         { label: 'Female', value: 'Female' }
@@ -97,29 +94,6 @@ const Dosen = () => {
 
     const hideDeleteDosenDialog = () => {
         setDeleteDosenDialog(false);
-    };
-
-    const renderHeader = () => {
-        return (
-            <div className="flex justify-content-between">
-                <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" />
-                </span>
-                <Button icon="pi pi-plus" onClick={openNew} />
-            </div>
-        );
-    };
-    const header = renderHeader();
-
-    // Action Button
-    const actionBodyTemplate = (rowData: Demo.Dosen) => {
-        return (
-            <React.Fragment>
-                <Button icon="pi pi-pencil" outlined className="mr-2" size="small" onClick={() => editDosen(rowData)} />
-                <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={ () => confirmDeleteDosen(rowData) } />
-            </React.Fragment>
-        );
     };
 
     const confirmDeleteDosen = (dosen: Demo.Dosen) => {
@@ -194,23 +168,51 @@ const Dosen = () => {
         }
     };
 
+    const reloadTable = () => {
+        fetchDosen();
+        toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Fetch data successfully', life: 3000 });
+    };
+
+    // Header Search, Refresh, and Add Button
+    const renderHeader = () => {
+        return (
+            <div className="flex justify-content-between">
+                <div>
+                    <span className="p-input-icon-left">
+                        <i className="pi pi-search" />
+                        <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" style={{ width: '92%' }} />
+                    </span>
+                </div>
+                <div>
+                    <Button icon="pi pi-plus" rounded onClick={openNew} />
+                </div>
+            </div>
+        );
+    };
+    const header = renderHeader();
+    // Action Button
+    const actionBodyTemplate = (rowData: Demo.Dosen) => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-pencil" outlined className="mr-2" size="small" onClick={() => editDosen(rowData)} />
+                <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={ () => confirmDeleteDosen(rowData) } />
+            </React.Fragment>
+        );
+    };
+    // Action Button for Create/Update Dialog
     const dialogFooter = (
         <div>
-            <Button label="Cancel" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
-            <Button label="Save" icon="pi pi-check" size="small" onClick={saveDosen} />
+            <Button label="Batal" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
+            <Button label="Simpan" icon="pi pi-check" size="small" onClick={saveDosen} />
         </div>
     );
+    // Action Button for Delete Dialog
     const deleteDosenDialogFooter = (
         <>
             <Button label="No" icon="pi pi-times" size="small" text onClick={hideDeleteDosenDialog} />
             <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteDosen} />
         </>
     );
-
-    useEffect(() => {
-        fetchDosen();
-        initFilters();
-    }, []);
 
     return (
         <div className="grid">
@@ -230,7 +232,7 @@ const Dosen = () => {
                     paginator
                     className="p-datatable-gridlines"
                     showGridlines
-                    rows={10}
+                    rows={rows}
                     rowsPerPageOptions={[5, 10, 25]}
                     dataKey="id"
                     filters={filters}
@@ -238,9 +240,34 @@ const Dosen = () => {
                     loading={loading}
                     responsiveLayout="scroll"
                     emptyMessage="No data found."
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
                     header={header}
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+                    currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
+                    // paginatorLeft={(
+                    //     <Dropdown
+                    //         value={rows}
+                    //         options={[5, 10, 25]}
+                    //         onChange={(e) => setRows(e.value)}
+                    //         placeholder="Rows per page"
+                    //     />
+                    // )}
+                    paginatorRight={
+                        <div className="p-d-flex p-ai-center">
+                            <Button 
+                                type="button" 
+                                icon="pi pi-refresh" 
+                                className="p-button-text p-ml-2" 
+                                onClick={reloadTable} 
+                                disabled={loading}
+                            />
+                            <Dropdown
+                                value={rows}
+                                options={[5, 10, 25]}
+                                onChange={(e) => setRows(e.value)}
+                                placeholder="Rows per page"
+                            />
+                        </div>
+                    }
                 >
                         <Column 
                             field="nama" 
@@ -271,7 +298,7 @@ const Dosen = () => {
                             header="Alamat" 
                             style={{ minWidth: '12rem' }} 
                             sortable />
-                        <Column bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ minWidth: '10rem' }}></Column>
+                        <Column alignHeader="center" bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ width: '9rem', minWidth: '9rem' }}></Column>
                     </DataTable>
 
                     <Dialog visible={dosenDialog} header={dosen.id ? "Edit Dosen" : "New Dosen"} style={{ width: '450px' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
