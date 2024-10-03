@@ -297,7 +297,7 @@
   .p-component {
     font-family: var(--font-family);
     font-feature-settings: var(--font-feature-settings, normal);
-    font-size: 1rem;
+    /* font-size: 1rem; */
     font-weight: normal;
   }
 
@@ -1108,10 +1108,10 @@
   .p-inputtext {
     font-family: var(--font-family);
     font-feature-settings: var(--font-feature-settings, normal);
-    font-size: 1rem;
+    font-size: 0.875rem;
     color: #4b5563;
     background: #ffffff;
-    padding: 0.75rem 0.75rem;
+    padding: 0.656rem 0.656rem;
     border: 1px solid #d1d5db;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
     appearance: none;
@@ -1816,7 +1816,7 @@
     color: #ffffff;
     background: #6366F1;
     border: 1px solid #6366F1;
-    padding: 0.75rem 1.25rem;
+    padding: 0.656rem 1.25rem;
     font-size: 1rem;
     transition: background-color 0.2s, color 0.2s, border-color 0.2s, box-shadow 0.2s;
     border-radius: 6px;
@@ -1919,8 +1919,8 @@
     border-radius: 2rem;
   }
   .p-button.p-button-icon-only {
-    width: 3rem;
-    padding: 0.75rem 0;
+    width: 2.7rem;
+    padding: 0.656rem 0;
   }
   .p-button.p-button-icon-only .p-button-icon-left,
 .p-button.p-button-icon-only .p-button-icon-right {
@@ -1928,7 +1928,7 @@
   }
   .p-button.p-button-icon-only.p-button-rounded {
     border-radius: 50%;
-    height: 3rem;
+    height: 2.7rem;
   }
   .p-button.p-button-sm {
     font-size: 0.875rem;
@@ -2679,7 +2679,7 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 1px 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
   }
   .p-datatable .p-datatable-footer {
@@ -2687,12 +2687,12 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
   }
   .p-datatable .p-datatable-thead > tr > th {
     text-align: left;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
     font-weight: 700;
@@ -2702,7 +2702,7 @@
   }
   .p-datatable .p-datatable-tfoot > tr > td {
     text-align: left;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
     font-weight: 700;
@@ -2756,7 +2756,7 @@
     text-align: left;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
   }
   .p-datatable .p-datatable-tbody > tr > td .p-row-toggler,
 .p-datatable .p-datatable-tbody > tr > td .p-row-editor-init,
@@ -2967,7 +2967,7 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 1px 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
   }
   .p-dataview .p-dataview-content {
@@ -2985,7 +2985,7 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
@@ -3011,7 +3011,7 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 1px 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
   }
   .p-datascroller .p-datascroller-content {
@@ -3029,7 +3029,7 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
     border-bottom-left-radius: 6px;
     border-bottom-right-radius: 6px;
@@ -3298,7 +3298,7 @@
   }
   .p-paginator .p-dropdown {
     margin-left: 0.5rem;
-    height: 3rem;
+    height: 2.63rem;
   }
   .p-paginator .p-dropdown .p-dropdown-label {
     padding-right: 0;
@@ -3510,7 +3510,7 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 1px 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
   }
   .p-treetable .p-treetable-footer {
@@ -3518,12 +3518,12 @@
     color: #374151;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     font-weight: 700;
   }
   .p-treetable .p-treetable-thead > tr > th {
     text-align: left;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
     font-weight: 700;
@@ -3533,7 +3533,7 @@
   }
   .p-treetable .p-treetable-tfoot > tr > td {
     text-align: left;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
     font-weight: 700;
@@ -3579,7 +3579,7 @@
     text-align: left;
     border: 1px solid #e5e7eb;
     border-width: 0 0 1px 0;
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
   }
   .p-treetable .p-treetable-tbody > tr > td .p-treetable-toggler {
     width: 2rem;
@@ -4075,13 +4075,13 @@
     border-bottom: 0 none;
     background: #ffffff;
     color: #374151;
-    padding: 1.5rem;
+    padding: 1.25rem;
     border-top-right-radius: 6px;
     border-top-left-radius: 6px;
   }
   .p-dialog .p-dialog-header .p-dialog-title {
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 1.1rem;
   }
   .p-dialog .p-dialog-header .p-dialog-header-icon {
     width: 2rem;
@@ -4109,7 +4109,7 @@
   .p-dialog .p-dialog-content {
     background: #ffffff;
     color: #4b5563;
-    padding: 0 1.5rem 2rem 1.5rem;
+    padding: 0 1.25rem 1.25rem 1.25rem;
   }
   .p-dialog .p-dialog-content:last-of-type {
     border-bottom-right-radius: 6px;
@@ -4119,7 +4119,7 @@
     border-top: 0 none;
     background: #ffffff;
     color: #4b5563;
-    padding: 0 1.5rem 1.5rem 1.5rem;
+    padding: 0 1.25rem 1.25rem 1.25rem;
     text-align: right;
     border-bottom-right-radius: 6px;
     border-bottom-left-radius: 6px;
@@ -4267,7 +4267,7 @@
     height: 0.25rem;
   }
   .p-fileupload .p-fileupload-row > div {
-    padding: 1rem 1rem;
+    padding: 0.875rem 0.875rem;
   }
   .p-fileupload.p-fileupload-advanced .p-message {
     margin-top: 0;
@@ -5373,7 +5373,7 @@
     height: 1rem;
   }
   .p-inline-message .p-inline-message-text {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
   .p-inline-message.p-inline-message-icon-only .p-inline-message-icon {
     margin-right: 0;
