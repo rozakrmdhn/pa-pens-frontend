@@ -98,19 +98,19 @@ const Dosen = () => {
 
     const confirmDeleteDosen = (dosen: Demo.Dosen) => {
         setDosen({ ...dosen });
-        console.log(dosen);
+        // console.log(dosen);
         setDeleteDosenDialog(true);
     };
 
     const editDosen = (dosen: Demo.Dosen) => {
         setDosen({ ...dosen });
-        console.log(dosen);
+        // console.log(dosen);
         setDosenDialog(true);
     };
 
     const fetchDosen = async () => {
         try {
-            DosenService.getDosen().then((data) => {
+            await DosenService.getDosen().then((data) => {
                 setDosens(getData(data));
                 setLoading(false);
             });
@@ -241,17 +241,9 @@ const Dosen = () => {
                     responsiveLayout="scroll"
                     emptyMessage="No data found."
                     header={header}
-                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport"
+                    paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
                     currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
-                    // paginatorLeft={(
-                    //     <Dropdown
-                    //         value={rows}
-                    //         options={[5, 10, 25]}
-                    //         onChange={(e) => setRows(e.value)}
-                    //         placeholder="Rows per page"
-                    //     />
-                    // )}
-                    paginatorRight={
+                    paginatorLeft={
                         <div className="p-d-flex p-ai-center">
                             <Button 
                                 type="button" 
@@ -260,11 +252,14 @@ const Dosen = () => {
                                 onClick={reloadTable} 
                                 disabled={loading}
                             />
+                        </div>
+                    }
+                    paginatorRight={
+                        <div className="p-d-flex p-ai-center">
                             <Dropdown
                                 value={rows}
                                 options={[5, 10, 25]}
                                 onChange={(e) => setRows(e.value)}
-                                placeholder="Rows per page"
                             />
                         </div>
                     }
