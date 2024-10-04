@@ -13,17 +13,18 @@ import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import Link from 'next/link';
 import { Menu } from 'primereact/menu';
+import { Dialog } from 'primereact/dialog';
 
 const Pengajuan = () => {
     const router = useRouter();
-    const [customers, setMahasiswa] = useState<Demo.Customer[]>([]);
+    const [pengajuan, setMahasiswa] = useState<Demo.Mahasiswa[]>([]);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const menu = useRef<Menu>(null);
     
     // Breadcrumb
-    const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
+    const breadcrumbHome = { icon: 'pi pi-envelope', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
         { label: 'Magang' },
         { label: 'Pengajuan', command: () => router.push('/pengajuan') }
@@ -31,7 +32,7 @@ const Pengajuan = () => {
 
     const getMahasiswa = (data: Demo.Mahasiswa[]) => {
         return [...(data || [])].map((d) => {
-            d.date = new Date('04-10-2024');
+            // d.date = new Date('04-10-2024');
             return d;
         });
     };
@@ -99,7 +100,7 @@ const Pengajuan = () => {
                     </span>
                     <Button type="button" className="ml-2" severity="secondary" icon="pi pi-filter-slash" size="small" outlined onClick={clearFilter} />
                 </div>
-                <Button type="button" icon="pi pi-plus" rounded />
+                <Button icon="pi pi-plus" rounded onClick={() => router.push('/pengajuan/pendaftaran')} />
             </div>
         );
     };
@@ -161,7 +162,7 @@ const Pengajuan = () => {
         }
     ];
     // Default Value Option
-    const genderOptions = [
+    const akademikOptions = [
         { label: '2024/2025', value: '2024' },
     ];
     const header = renderHeader();
@@ -183,11 +184,11 @@ const Pengajuan = () => {
             <div className="col-12">
                 <div className="flex justify-content-between align-items-center mb-2">
                     <h5 className="mb-0">Pengajuan KP</h5>
-                    <Dropdown id="jenis_kelamin" value={null} options={genderOptions} onChange={(e) => handleInputChange(e, 'tahun')} placeholder="2024/2025" />
+                    <Dropdown id="jenis_kelamin" value={null} options={akademikOptions} onChange={(e) => handleInputChange(e, 'tahun')} placeholder="2024/2025" />
                 </div>
                 <div className="card p-3">
                 <DataTable
-                        value={customers}
+                        value={pengajuan}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -211,17 +212,16 @@ const Pengajuan = () => {
                             style={{ minWidth: '12rem' }} />
                         <Column 
                             header="Tanggal" 
-                            filterField="date" 
                             dataType="date" 
                             style={{ minWidth: '10rem' }} 
-                            body={dateBodyTemplate} 
+                            // body={dateBodyTemplate}
                             filter 
                             filterElement={dateFilterTemplate} />
                         <Column
                             field="company"
                             header="Tempat KP" />
                         <Column 
-                            field="status" 
+                            field="" 
                             header="Status" 
                             filterMenuStyle={{ width: '12rem' }} 
                             style={{ minWidth: '10rem' }} 
@@ -230,7 +230,7 @@ const Pengajuan = () => {
                             filterElement={statusFilterTemplate} />
                         <Column
                             header="Actions"
-                            style={{ minWidth: '7rem' }}
+                            style={{ minWidth: '7rem', width: '7rem' }}
                             alignHeader="center"
                             bodyClassName="text-center"
                             body={actionBodyTemplate}
