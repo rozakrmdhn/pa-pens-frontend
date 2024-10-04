@@ -12,6 +12,7 @@ import { Demo } from '@/types';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
 import Link from 'next/link';
+import { Menu } from 'primereact/menu';
 
 const Pengajuan = () => {
     const router = useRouter();
@@ -19,6 +20,7 @@ const Pengajuan = () => {
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
+    const menu = useRef<Menu>(null);
     
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -27,9 +29,9 @@ const Pengajuan = () => {
         { label: 'Pengajuan', command: () => router.push('/pengajuan') }
     ];
 
-    const getMahasiswa = (data: Demo.Customer[]) => {
+    const getMahasiswa = (data: Demo.Mahasiswa[]) => {
         return [...(data || [])].map((d) => {
-            d.date = new Date(d.date);
+            d.date = new Date('04-10-2024');
             return d;
         });
     };
@@ -90,11 +92,14 @@ const Pengajuan = () => {
     const renderHeader = () => {
         return (
             <div className="flex justify-content-between">
-                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter} />
-                <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
-                </span>
+                <div>
+                    <span className="p-input-icon-left">
+                        <i className="pi pi-search" />
+                        <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" />
+                    </span>
+                    <Button type="button" className="ml-2" severity="secondary" icon="pi pi-filter-slash" size="small" outlined onClick={clearFilter} />
+                </div>
+                <Button type="button" icon="pi pi-plus" rounded />
             </div>
         );
     };
@@ -123,18 +128,62 @@ const Pengajuan = () => {
     const statusItemTemplate = (option: any) => {
         return <span className={`customer-badge status-${option}`}>{option}</span>;
     };
+    const toggleMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+        menu.current?.toggle(event);
+    };
+    const handleInputChange = (e: any, field: string) => {
+        const value = e.target.value;
+        
+    };
 
+    const overlayMenuItems = [
+        {
+            label: 'Ubah Usulan',
+            icon: 'pi pi-pencil'
+        },
+        {
+            label: 'Verifikasi',
+            icon: 'pi pi-pencil'
+        },
+        {
+            label: 'Monitoring',
+            icon: 'pi pi-desktop',
+            command: () => router.push('/monitoring')
+        },
+        {
+            label: 'Logbook',
+            icon: 'pi pi-file-edit',
+            command: () => router.push('/logbook')
+        },
+        {
+            label: 'Ploting Dosbing',
+            icon: 'pi pi-user-plus'
+        }
+    ];
+    // Default Value Option
+    const genderOptions = [
+        { label: '2024/2025', value: '2024' },
+    ];
     const header = renderHeader();
+    // Action Button
+    const actionBodyTemplate = () => {
+        return (
+            <React.Fragment>
+                <Menu ref={menu} model={overlayMenuItems} popup />
+                <Button type="button" label="Opsi" icon="pi pi-angle-down" size="small" outlined onClick={toggleMenu} style={{ width: 'auto' }} />
+            </React.Fragment>
+        );
+    };
 
     return (
         <div className="grid">
-            <div className="col-12">
+            <div className="col-12 pb-1">
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-                <div className="flex justify-content-between my-1">
-                    <h5>Pengajuan KP</h5>
-                    <Link href="/pengajuan/create"><i className='pi pi-plus mr-2'></i>Buat Pengajuan KP</Link>
+                <div className="flex justify-content-between align-items-center mb-2">
+                    <h5 className="mb-0">Pengajuan KP</h5>
+                    <Dropdown id="jenis_kelamin" value={null} options={genderOptions} onChange={(e) => handleInputChange(e, 'tahun')} placeholder="2024/2025" />
                 </div>
                 <div className="card p-3">
                 <DataTable
@@ -155,7 +204,7 @@ const Pengajuan = () => {
                             field="nrp"
                             header="NRP" />
                         <Column 
-                            field="name" 
+                            field="nama" 
                             header="Nama" 
                             filter 
                             filterPlaceholder="Search by name" 
@@ -181,7 +230,10 @@ const Pengajuan = () => {
                             filterElement={statusFilterTemplate} />
                         <Column
                             header="Actions"
-                            style={{ minWidth: '10rem' }}
+                            style={{ minWidth: '7rem' }}
+                            alignHeader="center"
+                            bodyClassName="text-center"
+                            body={actionBodyTemplate}
                             />
                     </DataTable>
                 </div>

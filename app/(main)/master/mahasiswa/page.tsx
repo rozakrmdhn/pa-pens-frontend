@@ -3,92 +3,75 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { InputText } from "primereact/inputtext";
 import { BreadCrumb } from "primereact/breadcrumb";
 import { useRouter } from 'next/navigation';
-import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { Toast } from 'primereact/toast';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
-import { Button } from 'primereact/button';
 import { Demo } from '@/types';
-import { Calendar } from 'primereact/calendar';
-import { InputNumber } from 'primereact/inputnumber';
-import { Dropdown } from 'primereact/dropdown';
-import { ProgressBar } from 'primereact/progressbar';
-import { Slider } from 'primereact/slider';
-import { TriStateCheckbox } from 'primereact/tristatecheckbox';
-import { classNames } from 'primereact/utils';
+import { ConfirmDialog } from 'primereact/confirmdialog';
+import { Column } from 'primereact/column';
+import { Button } from 'primereact/button';
+import { FilterMatchMode } from 'primereact/api';
 import { MahasiswaService } from '@/services/service/MahasiswaService';
+import { Dropdown } from 'primereact/dropdown';
+import { Dialog } from 'primereact/dialog';
 
 const Mahasiswa = () => {
+    useEffect(() => {
+        fetchMahasiswa();
+        initFilters();
+    }, []);
+
+    let emptyMahasiswa: Demo.Mahasiswa = {
+        id: '',
+        nama: '',
+        jenis_kelamin: '',
+        nomor_hp: '',
+        alamat: '',
+        jurusan: '',
+    };
+
     const router = useRouter();
-    const [mahasiswa, setMahasiswa] = useState<Demo.Mahasiswa[]>([]);
-    const [filters, setFilters] = useState<DataTableFilterMeta>({});
+    const toast = useRef<Toast>(null);
+    const dt = useRef<DataTable<any>>(null);
+    const [rows, setRows] = useState(10);
     const [loading, setLoading] = useState(true);
+    const [submitted, setSubmitted] = useState(false);
+    const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [globalFilterValue, setGlobalFilterValue] = useState('');
+
+    const [mahasiswas, setMahasiswas] = useState<Demo.Mahasiswa[]>([]);
+    const [mahasiswa, setMahasiswa] = useState<Demo.Mahasiswa>(emptyMahasiswa);
+
+    // Dialog
+    const [deleteMahasiswaDialog, setDeleteMahasiswaDialog] = useState(false);
+    const [mahasiswaDialog, setMahasiswaDialog] = useState(false);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
         { label: 'Master Data' },
-        { label: 'Mahasiwa', command: () => router.push('/master/mahasiswa') }
+        { label: 'Mahasiswa', command: () => router.push('/master/mahasiswa') }
     ];
 
-    const getMahasiwa = (data: Demo.Mahasiswa[]) => {
-        return [...(data || [])].map((d) => {
-            d.date = new Date(d.date);
-            return d;
-        });
-    };
+    // Default Value Option
+    const genderOptions = [
+        { label: 'Male', value: 'Male' },
+        { label: 'Female', value: 'Female' }
+    ];
 
-    const formatDate = (value: Date) => {
-        return value.toLocaleDateString('en-US', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
-    };
-
-    const formatCurrency = (value: number) => {
-        return value.toLocaleString('en-US', {
-            style: 'currency',
-            currency: 'USD'
-        });
+    const handleInputChange = (e: any, field: string) => {
+        const value = e.target.value;
+        setMahasiswa({ ...mahasiswa, [field]: value });
     };
 
     const initFilters = () => {
         setFilters({
             global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-            name: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-            },
-            'country.name': {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-            },
-            representative: { value: null, matchMode: FilterMatchMode.IN },
-            date: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }]
-            },
-            balance: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
-            },
-            status: {
-                operator: FilterOperator.OR,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
-            },
-            activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
-            verified: { value: null, matchMode: FilterMatchMode.EQUALS }
         });
         setGlobalFilterValue('');
     };
-
-    const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
-
     const clearFilter = () => {
         initFilters();
     };
-
     const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         let _filters1 = { ...filters };
@@ -97,99 +80,246 @@ const Mahasiswa = () => {
         setFilters(_filters1);
         setGlobalFilterValue(value);
     };
+    const openNew = () => {
+        setMahasiswa(emptyMahasiswa);
+        setSubmitted(false);
+        setMahasiswaDialog(true);
+    };
 
+    const hideDialog = () => {
+        setSubmitted(false);
+        setMahasiswaDialog(false);
+    };
+
+    const hideDeleteMahasiswaDialog = () => {
+        setDeleteMahasiswaDialog(false);
+    };
+
+    const confirmDeleteMahasiswa = (dosen: Demo.Dosen) => {
+        setMahasiswa({ ...dosen });
+        // console.log(dosen);
+        setDeleteMahasiswaDialog(true);
+    };
+
+    const editMahasiswa = (dosen: Demo.Dosen) => {
+        setMahasiswa({ ...dosen });
+        // console.log(dosen);
+        setMahasiswaDialog(true);
+    };
+
+    const reloadTable = () => {
+        fetchMahasiswa();
+    };
+
+    const getData = (data: Demo.Mahasiswa[]) => {
+        return [...(data || [])].map((d) => {
+            return d;
+        });
+    };
+
+    const fetchMahasiswa = async () => {
+        try {
+            await MahasiswaService.getMahasiswa().then((data) => {
+                setMahasiswas(getData(data));
+                setLoading(false);
+            });
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch data', life: 3000 });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Delete Data
+    const deleteMahasiswa = async () => {
+        try {
+            if (mahasiswa.id) {
+                await MahasiswaService.deleteMahasiswa(mahasiswa.id);
+                setMahasiswas(mahasiswas.filter(d => d.id !== mahasiswa.id));
+                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Mahasiswa deleted successfully', life: 3000 });
+            }
+            setDeleteMahasiswaDialog(false);
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
+        }
+    };
+
+    // Create or Update
+    const saveMahasiswa = async () => {
+        setSubmitted(true);
+        if (mahasiswa.nama?.trim()) {
+            try {
+                if (mahasiswa.id) {
+                    await MahasiswaService.updateMahasiswa(mahasiswa.id, mahasiswa);  // Update API call
+                    toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Mahasiswa updated successfully', life: 3000 });
+                } else {
+                    await MahasiswaService.createMahasiswa(mahasiswa);  // Create API call
+                    toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Mahasiswa created successfully', life: 3000 });
+                }
+                fetchMahasiswa();  // Re-fetch the updated list
+            } catch (error) {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Mahasiswa', life: 3000 });
+            } finally {
+                setMahasiswaDialog(false);
+            }
+        }
+    };
+
+    // Header Search, Refresh, and Add Button
     const renderHeader = () => {
         return (
             <div className="flex justify-content-between">
-                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter} />
-                <span className="p-input-icon-left">
-                    <i className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
-                </span>
+                <div>
+                    <span className="p-input-icon-left">
+                        <i className="pi pi-search" />
+                        <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" style={{ width: '92%' }} />
+                    </span>
+                </div>
+                <div>
+                    <Button icon="pi pi-plus" rounded onClick={openNew} />
+                </div>
             </div>
         );
     };
-
-    useEffect(() => {
-        MahasiswaService.getMahasiswa().then((data) => {
-            setMahasiswa(getMahasiwa(data));
-            setLoading(false);
-        });
-
-        initFilters();
-    }, []);
-
-    const dateBodyTemplate = (rowData: Demo.Customer) => {
-        return formatDate(rowData.date);
-    };
-    const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <Calendar value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />;
-    };
-    const balanceBodyTemplate = (rowData: Demo.Customer) => {
-        return formatCurrency(rowData.balance as number);
-    };
-    const balanceFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <InputNumber value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} mode="currency" currency="USD" locale="en-US" />;
-    };
-    const statusBodyTemplate = (rowData: Demo.Customer) => {
-        return <span className={`customer-badge status-${rowData.status}`}>{rowData.status}</span>;
-    };
-    const statusFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <Dropdown value={options.value} options={statuses} onChange={(e) => options.filterCallback(e.value, options.index)} itemTemplate={statusItemTemplate} placeholder="Select a Status" className="p-column-filter" showClear />;
-    };
-    const statusItemTemplate = (option: any) => {
-        return <span className={`customer-badge status-${option}`}>{option}</span>;
-    };
-
     const header = renderHeader();
+    // Action Button
+    const actionBodyTemplate = (rowData: Demo.Dosen) => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-pencil" outlined className="mr-2" size="small" onClick={() => editMahasiswa(rowData)} />
+                <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={ () => confirmDeleteMahasiswa(rowData) } />
+            </React.Fragment>
+        );
+    };
+    // Action Button for Create/Update Dialog
+    const dialogFooter = (
+        <div>
+            <Button label="Batal" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
+            <Button label="Simpan" icon="pi pi-check" size="small" onClick={saveMahasiswa} />
+        </div>
+    );
+    // Action Button for Delete Dialog
+    const deleteDialogFooter = (
+        <>
+            <Button label="No" icon="pi pi-times" size="small" text onClick={hideDeleteMahasiswaDialog} />
+            <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteMahasiswa} />
+        </>
+    );
 
     return (
         <div className="grid">
             <div className="col-12">
-                <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
+            <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
                 <div className="flex justify-content-between my-1">
-                    <h5>Data Mahasiwa</h5>
+                    <h5>Data Mahasiswa</h5>
                 </div>
                 <div className="card p-3">
-                <DataTable
-                        value={mahasiswa}
+                    <Toast ref={toast} />
+                    <ConfirmDialog />
+                    <DataTable
+                        ref={dt}
+                        value={mahasiswas}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
-                        rows={10}
+                        rows={rows}
+                        rowsPerPageOptions={[5, 10, 25]}
                         dataKey="id"
                         filters={filters}
                         filterDisplay="menu"
                         loading={loading}
                         responsiveLayout="scroll"
-                        emptyMessage="No customers found."
+                        emptyMessage="No data found."
                         header={header}
-                    >
-                        <Column 
-                            field="name" 
-                            header="Name" 
-                            filter 
-                            filterPlaceholder="Search by name" 
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                        paginatorLeft={
+                            <div className="p-d-flex p-ai-center">
+                                <Button 
+                                    type="button" 
+                                    icon="pi pi-refresh" 
+                                    className="p-button-text p-ml-2" 
+                                    onClick={reloadTable} 
+                                    disabled={loading}
+                                />
+                            </div>
+                        }
+                        paginatorRight={
+                            <div className="p-d-flex p-ai-center">
+                                <Dropdown
+                                    value={rows}
+                                    options={[5, 10, 25]}
+                                    onChange={(e) => setRows(e.value)}
+                                />
+                            </div>
+                        } >
+                        <Column
+                            field="nama" 
+                            header="Nama" 
+                            filter
+                            sortable
                             style={{ minWidth: '12rem' }} />
                         <Column 
-                            header="Date" 
-                            filterField="date" 
-                            dataType="date" 
-                            style={{ minWidth: '10rem' }} 
-                            body={dateBodyTemplate} 
-                            filter 
-                            filterElement={dateFilterTemplate} />
+                            field="jenis_kelamin"
+                            header="Jenkel"
+                            bodyClassName="text-center" 
+                            style={{ minWidth: '8rem' }} 
+                            sortable  />
                         <Column 
-                            field="status" 
-                            header="Status" 
-                            filterMenuStyle={{ width: '14rem' }} 
+                            field="nomor_hp" 
+                            header="Nomor HP" 
+                            showFilterMatchModes={false} 
+                            style={{ minWidth: '10rem' }} 
+                            sortable  />
+                        <Column 
+                            field="alamat" 
+                            header="Alamat" 
                             style={{ minWidth: '12rem' }} 
-                            body={statusBodyTemplate} 
-                            filter 
-                            filterElement={statusFilterTemplate} />
+                            sortable />
+                        <Column 
+                            field="jurusan" 
+                            header="Jurusan" 
+                            style={{ minWidth: '12rem' }} 
+                            sortable />
+                        <Column 
+                            alignHeader="center" 
+                            bodyClassName="text-center" 
+                            header="Actions"
+                            body={actionBodyTemplate} 
+                            style={{ width: '9rem', minWidth: '9rem' }} />
                     </DataTable>
+
+                    <Dialog visible={mahasiswaDialog} header={mahasiswa.id ? "Edit Mahasiswa" : "New Mahasiswa"} style={{ width: '450px' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
+                        <div className="field">
+                            <label htmlFor="nama">Nama</label>
+                            <InputText id="nama" autoComplete="off" aria-describedby="nama-help" required value={mahasiswa.nama || ''} onChange={(e) => handleInputChange(e, 'nama')} />
+                            {submitted && !mahasiswa.nama && <small id="nama-help" className="p-error">Name is required.</small>}
+                        </div>
+                        <div className="field">
+                            <label htmlFor="jenis_kelamin">Jenis Kelamin</label>
+                            <Dropdown id="jenis_kelamin" value={mahasiswa.jenis_kelamin} options={genderOptions} onChange={(e) => handleInputChange(e, 'jenis_kelamin')} placeholder="Select Gender" />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="nomor_hp">Nomor HP</label>
+                            <InputText id="nomor_hp" autoComplete="off" value={mahasiswa.nomor_hp || ''} onChange={(e) => handleInputChange(e, 'nomor_hp')} />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="alamat">Alamat</label>
+                            <InputText id="alamat" autoComplete="off" value={mahasiswa.alamat || ''} onChange={(e) => handleInputChange(e, 'alamat')} />
+                        </div>
+                    </Dialog>
+
+                    <Dialog visible={deleteMahasiswaDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteDialogFooter} onHide={hideDeleteMahasiswaDialog}>
+                        <div className="flex align-items-center justify-content-center">
+                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            {mahasiswa && (
+                                <span>
+                                    Are you sure you want to delete <b>{mahasiswa.nama}</b>?
+                                </span>
+                            )}
+                        </div>
+                    </Dialog>
                 </div>
             </div>
         </div>

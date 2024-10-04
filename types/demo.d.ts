@@ -185,25 +185,13 @@ declare namespace Demo {
 
     // MahasiswaService
     type Mahasiswa = {
-        id?: number;
-        name?: string;
-        country?: ICountryObject;
-        company?: string;
-        date: Date;
-        status?: string;
-        activity?: number;
-        balance?: number | string;
-        verified?: boolean;
-        amount?: number;
-        price?: number;
-        rating?: number;
-        image?: string;
-        orders?: Demo.Mahasiswa[];
-        inventoryStatus?: string;
-        representative: {
-            name: string;
-            image: string;
-        };
+        id?: string | undefined;
+        nrp?: number;
+        nama?: string;
+        jenis_kelamin?: string;
+        nomor_hp?: string;
+        alamat?: string;
+        jurusan?: string;
     };
 
     // MitraService

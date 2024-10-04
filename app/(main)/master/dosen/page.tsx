@@ -34,16 +34,15 @@ const Dosen = () => {
     const dt = useRef<DataTable<any>>(null);
     const [rows, setRows] = useState(10);
     const [loading, setLoading] = useState(true);
-
-    const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
-    const [dosen, setDosen] = useState<Demo.Dosen>(emptyDosen);
-    const [deleteDosenDialog, setDeleteDosenDialog] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [globalFilterValue, setGlobalFilterValue] = useState('');
 
+    const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
+    const [dosen, setDosen] = useState<Demo.Dosen>(emptyDosen);
+
     // Dialog
+    const [deleteDosenDialog, setDeleteDosenDialog] = useState(false);
     const [dosenDialog, setDosenDialog] = useState(false);
 
     // Breadcrumb
@@ -108,6 +107,12 @@ const Dosen = () => {
         setDosenDialog(true);
     };
 
+    const getData = (data: Demo.Dosen[]) => {
+        return [...(data || [])].map((d) => {
+            return d;
+        });
+    };
+
     const fetchDosen = async () => {
         try {
             await DosenService.getDosen().then((data) => {
@@ -120,21 +125,8 @@ const Dosen = () => {
             setLoading(false);
         }
     };
-
-    const getData = (data: Demo.Dosen[]) => {
-        return [...(data || [])].map((d) => {
-            return d;
-        });
-    };
-
-    const onSave = (dosen: Demo.Dosen) => {
-        if (dosen.id) {
-            setDosens(dosens.map(d => (d.id === dosen.id ? dosen : d)));
-        } else {
-            setDosens([...dosens, dosen]);
-        }
-    };
     
+    // Create or Update
     const saveDosen = async () => {
         setSubmitted(true);
         if (dosen.nama?.trim()) {
@@ -155,6 +147,7 @@ const Dosen = () => {
         }
     };
 
+    // Delete Data
     const deleteDosen = async () => {
         try {
             if (dosen.id) {
@@ -170,7 +163,6 @@ const Dosen = () => {
 
     const reloadTable = () => {
         fetchDosen();
-        toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Fetch data successfully', life: 3000 });
     };
 
     // Header Search, Refresh, and Add Button
@@ -207,7 +199,7 @@ const Dosen = () => {
         </div>
     );
     // Action Button for Delete Dialog
-    const deleteDosenDialogFooter = (
+    const deleteDialogFooter = (
         <>
             <Button label="No" icon="pi pi-times" size="small" text onClick={hideDeleteDosenDialog} />
             <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteDosen} />
@@ -293,7 +285,12 @@ const Dosen = () => {
                             header="Alamat" 
                             style={{ minWidth: '12rem' }} 
                             sortable />
-                        <Column alignHeader="center" bodyClassName="text-center" header="Actions" body={actionBodyTemplate} style={{ width: '9rem', minWidth: '9rem' }}></Column>
+                        <Column 
+                            alignHeader="center" 
+                            bodyClassName="text-center" 
+                            header="Actions" 
+                            body={actionBodyTemplate} 
+                            style={{ width: '9rem', minWidth: '9rem' }} />
                     </DataTable>
 
                     <Dialog visible={dosenDialog} header={dosen.id ? "Edit Dosen" : "New Dosen"} style={{ width: '450px' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
@@ -320,7 +317,7 @@ const Dosen = () => {
                         </div>
                     </Dialog>
 
-                    <Dialog visible={deleteDosenDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteDosenDialogFooter} onHide={hideDeleteDosenDialog}>
+                    <Dialog visible={deleteDosenDialog} style={{ width: '450px' }} header="Confirm" modal footer={deleteDialogFooter} onHide={hideDeleteDosenDialog}>
                         <div className="flex align-items-center justify-content-center">
                             <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
                             {dosen && (
