@@ -21,7 +21,7 @@ export function middleware(req: NextRequest) {
 // Matcher function to apply middleware only on specific routes
 export const config = {
     matcher: [
-        '/dashboard/:path*',
-        '/pengajuan/:path*',
+        // '/dashboard/:path*',
+        // '/pengajuan/:path*',
     ],
 };
