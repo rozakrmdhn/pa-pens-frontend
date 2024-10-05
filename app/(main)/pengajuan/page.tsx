@@ -220,10 +220,10 @@ const Pengajuan = () => {
                             field="lama_kp"
                             header="Lama KP" />
                         <Column
-                            field="nrp"
+                            field="mahasiswa.nrp"
                             header="NRP" />
                         <Column 
-                            field="nama" 
+                            field="mahasiswa.nama" 
                             header="Nama" 
                             filter 
                             filterPlaceholder="Search by name" 
