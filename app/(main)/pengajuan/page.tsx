@@ -14,23 +14,33 @@ import { Dropdown } from 'primereact/dropdown';
 import Link from 'next/link';
 import { Menu } from 'primereact/menu';
 import { Dialog } from 'primereact/dialog';
+import { MagangService } from '@/services/service/MagangService';
+
+type Daftar = {
+    id?: string | undefined;
+    lama_kp?: string;
+    tempat_kp?: string;
+    alamat?: string;
+    kota?: string;
+};
 
 const Pengajuan = () => {
     const router = useRouter();
-    const [pengajuan, setMahasiswa] = useState<Demo.Mahasiswa[]>([]);
+    const [pengajuan, setPengajuan] = useState<Daftar[]>([]);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
+    const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
     const menu = useRef<Menu>(null);
     
     // Breadcrumb
-    const breadcrumbHome = { icon: 'pi pi-envelope', command: () => router.push('/dashboard') };
+    const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
         { label: 'Magang' },
         { label: 'Pengajuan', command: () => router.push('/pengajuan') }
     ];
 
-    const getMahasiswa = (data: Demo.Mahasiswa[]) => {
+    const getData = (data: Daftar[]) => {
         return [...(data || [])].map((d) => {
             // d.date = new Date('04-10-2024');
             return d;
@@ -106,8 +116,8 @@ const Pengajuan = () => {
     };
 
     useEffect(() => {
-        MahasiswaService.getMahasiswa().then((data) => {
-            setMahasiswa(getMahasiswa(data));
+        MagangService.getPengajuan().then((data) => {
+            setPengajuan(getData(data));
             setLoading(false);
         });
 
@@ -137,10 +147,11 @@ const Pengajuan = () => {
         
     };
 
-    const overlayMenuItems = [
+    const overlayMenuItems = (rowData: any) => [
         {
             label: 'Ubah Usulan',
-            icon: 'pi pi-pencil'
+            icon: 'pi pi-pencil',
+            command: () => router.push(`/pengajuan/pendaftaran/${rowData.id}`)
         },
         {
             label: 'Verifikasi',
@@ -162,15 +173,15 @@ const Pengajuan = () => {
         }
     ];
     // Default Value Option
-    const akademikOptions = [
+    const dropdownTAValues = [
         { label: '2024/2025', value: '2024' },
     ];
     const header = renderHeader();
     // Action Button
-    const actionBodyTemplate = () => {
+    const actionBodyTemplate = (rowData: any) => {
         return (
             <React.Fragment>
-                <Menu ref={menu} model={overlayMenuItems} popup />
+                <Menu ref={menu} model={overlayMenuItems(rowData)} popup />
                 <Button type="button" label="Opsi" icon="pi pi-angle-down" size="small" outlined onClick={toggleMenu} style={{ width: 'auto' }} />
             </React.Fragment>
         );
@@ -184,23 +195,30 @@ const Pengajuan = () => {
             <div className="col-12">
                 <div className="flex justify-content-between align-items-center mb-2">
                     <h5 className="mb-0">Pengajuan KP</h5>
-                    <Dropdown id="jenis_kelamin" value={null} options={akademikOptions} onChange={(e) => handleInputChange(e, 'tahun')} placeholder="2024/2025" />
+                    <Dropdown 
+                        id="jenis_kelamin" 
+                        value={dropdownSelectedTA} 
+                        options={dropdownTAValues} 
+                        onChange={(e) => setDropdownSelectedTA(e.value)}
+                        placeholder='Tahun Ajaran' />
                 </div>
                 <div className="card p-3">
                 <DataTable
-                        value={pengajuan}
-                        paginator
-                        className="p-datatable-gridlines"
-                        showGridlines
-                        rows={10}
-                        dataKey="id"
-                        filters={filters}
-                        filterDisplay="menu"
-                        loading={loading}
-                        responsiveLayout="scroll"
-                        emptyMessage="No customers found."
-                        header={header}
-                    >
+                    value={pengajuan}
+                    paginator
+                    className="p-datatable-gridlines"
+                    showGridlines
+                    rows={10}
+                    dataKey="id"
+                    filters={filters}
+                    filterDisplay="menu"
+                    loading={loading}
+                    responsiveLayout="scroll"
+                    emptyMessage="No customers found."
+                    header={header} >
+                        <Column
+                            field="lama_kp"
+                            header="Lama KP" />
                         <Column
                             field="nrp"
                             header="NRP" />
@@ -210,15 +228,8 @@ const Pengajuan = () => {
                             filter 
                             filterPlaceholder="Search by name" 
                             style={{ minWidth: '12rem' }} />
-                        <Column 
-                            header="Tanggal" 
-                            dataType="date" 
-                            style={{ minWidth: '10rem' }} 
-                            // body={dateBodyTemplate}
-                            filter 
-                            filterElement={dateFilterTemplate} />
                         <Column
-                            field="company"
+                            field="tempat_kp"
                             header="Tempat KP" />
                         <Column 
                             field="" 

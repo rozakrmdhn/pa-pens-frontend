@@ -34,6 +34,7 @@ const FormPendaftaran = () => {
     };
 
     const router = useRouter();
+    const { id } = useParams();
     const toast = useRef<Toast>(null);
     const [daftar, setDaftar] = useState<Daftar>(emptyDaftar);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -87,16 +88,35 @@ const FormPendaftaran = () => {
     const savePendaftaran = async () => {
         console.log(daftar);
         try {
-            await MagangService.createPengajuan(daftar);
-            toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Data created successfully', life: 3000 });
+            if (daftar.id) {
+                await MagangService.updatePengajuan(daftar.id, daftar);
+                toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Data updated successfully', life: 3000 });
+            } else {
+                await MagangService.createPengajuan(daftar);
+                toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Data created successfully', life: 3000 });
+            }
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save data', life: 3000 });
         }
     };
 
-    useEffect(() => {
+    const loadPengajuan = async (id: string) => {
+        try {
+            const pengajuan = await MagangService.getPengajuanById(id);
+            setDaftar(pengajuan.data);
+            setIsEditMode(true);  // We're in edit mode
+            console.log(pengajuan.data);
+        } catch (error) {
+            console.error('Failed to load pengajuan data', error);
+        }
+    };
 
-    }, []);
+    useEffect(() => {
+        if (id) {
+            // If an ID exists in the URL, load the pengajuan for editing
+            loadPengajuan(id);
+        }
+    }, [id]);
 
     return (
         <div className="grid">
