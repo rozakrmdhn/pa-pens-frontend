@@ -15,6 +15,7 @@ import Link from 'next/link';
 import { Menu } from 'primereact/menu';
 import { Dialog } from 'primereact/dialog';
 import { MagangService } from '@/services/service/MagangService';
+import { Badge } from 'primereact/badge';
 
 type Daftar = {
     id?: string | undefined;
@@ -22,6 +23,7 @@ type Daftar = {
     tempat_kp?: string;
     alamat?: string;
     kota?: string;
+    status_persetujuan?: string;
 };
 
 const Pengajuan = () => {
@@ -130,8 +132,9 @@ const Pengajuan = () => {
     const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         return <Calendar value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />;
     };
-    const statusBodyTemplate = (rowData: Demo.Customer) => {
-        return <span className={`customer-badge status-${rowData.status}`}>{rowData.status}</span>;
+    const statusBodyTemplate = (rowData: Daftar) => {
+        // return <span className={`customer-badge status-${rowData.status}`}>{rowData.status}</span>;
+        return <Badge value="Disetujui" severity='success'></Badge>;
     };
     const statusFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         return <Dropdown value={options.value} options={statuses} onChange={(e) => options.filterCallback(e.value, options.index)} itemTemplate={statusItemTemplate} placeholder="Select a Status" className="p-column-filter" showClear />;

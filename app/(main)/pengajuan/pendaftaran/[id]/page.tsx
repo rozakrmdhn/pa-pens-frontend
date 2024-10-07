@@ -17,6 +17,12 @@ type Daftar = {
     tempat_kp?: string;
     alamat?: string;
     kota?: string;
+    mahasiswa?: {
+        nama?: string;
+    };
+    dosen?: {
+        nama?: string;
+    };
 };
 
 interface InputValue {
@@ -137,6 +143,12 @@ const FormPendaftaran = () => {
                 <div className="card p-3">
                     <div className='p-fluid'>
                         <div className="field grid">
+                            <label htmlFor="dosbing" className="col-12 mb-2 md:col-2 md:mb-0">Nama</label>
+                            <div className="col-12 md:col-10">
+                                {daftar?.mahasiswa?.nama}
+                            </div>
+                        </div>
+                        <div className="field grid">
                             <label htmlFor="lama_kp" className="col-12 mb-2 md:col-2 md:mb-0">Lama KP</label>
                             <div className="col-12 md:col-5">
                                 <Dropdown
@@ -177,7 +189,7 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="dosbing" className="col-12 mb-2 md:col-2 md:mb-0">Dosen Pembimbing</label>
                             <div className="col-12 md:col-10">
-                                -
+                                {daftar?.dosen?.nama}
                             </div>
                         </div>
                         <div className="field grid">
