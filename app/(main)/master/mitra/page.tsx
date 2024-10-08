@@ -101,10 +101,10 @@ const Mitra = () => {
     const renderHeader = () => {
         return (
             <div className="flex justify-content-between">
-                <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter} />
+                {/* <Button type="button" icon="pi pi-filter-slash" label="Clear" outlined onClick={clearFilter} /> */}
                 <span className="p-input-icon-left">
                     <i className="pi pi-search" />
-                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Keyword Search" />
+                    <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" />
                 </span>
             </div>
         );
@@ -181,7 +181,7 @@ const Mitra = () => {
                 </div>
                 <div className="card p-3">
                 <DataTable
-                        value={mitra}
+                        // value={mitra}
                         paginator
                         className="p-datatable-gridlines"
                         showGridlines
@@ -191,40 +191,46 @@ const Mitra = () => {
                         filterDisplay="menu"
                         loading={loading}
                         responsiveLayout="scroll"
-                        emptyMessage="No customers found."
+                        emptyMessage="No data found."
                         header={header}
                     >
                         <Column 
                             field="name" 
-                            header="Name" 
+                            header="Nama Mitra" 
                             filter 
                             filterPlaceholder="Search by name" 
                             style={{ minWidth: '12rem' }} />
-                        <Column 
+                        {/* <Column 
                             header="Date" 
                             filterField="date" 
                             dataType="date" 
                             style={{ minWidth: '10rem' }} 
                             body={dateBodyTemplate} 
                             filter 
-                            filterElement={dateFilterTemplate} />
-                        <Column 
+                            filterElement={dateFilterTemplate} /> */}
+                        <Column
+                            field='alamat'
+                            header="Alamat Mitra" />
+                        {/* <Column 
                             field="status" 
-                            header="Status" 
+                            header="Alamat Mitra" 
                             filterMenuStyle={{ width: '14rem' }} 
                             style={{ minWidth: '12rem' }} 
                             body={statusBodyTemplate} 
                             filter 
-                            filterElement={statusFilterTemplate} />
-                        <Column 
+                            filterElement={statusFilterTemplate} /> */}
+                        {/* <Column 
                             field="activity" 
                             header="Activity" 
                             showFilterMatchModes={false} 
                             style={{ minWidth: '12rem' }} 
                             body={activityBodyTemplate} 
                             filter 
-                            filterElement={activityFilterTemplate} />
-                        <Column 
+                            filterElement={activityFilterTemplate} /> */}
+                        <Column
+                            field=''
+                            header="Actions" />
+                        {/* <Column 
                             field="verified" 
                             header="Verified" 
                             dataType="boolean" 
@@ -232,7 +238,7 @@ const Mitra = () => {
                             style={{ minWidth: '8rem' }} 
                             body={verifiedBodyTemplate} 
                             filter 
-                            filterElement={verifiedFilterTemplate} />
+                            filterElement={verifiedFilterTemplate} /> */}
                     </DataTable>
                 </div>
             </div>
