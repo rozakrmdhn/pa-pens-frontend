@@ -217,7 +217,7 @@ const Pengajuan = () => {
                     filterDisplay="menu"
                     loading={loading}
                     responsiveLayout="scroll"
-                    emptyMessage="No customers found."
+                    emptyMessage="No data found."
                     header={header} >
                         <Column
                             field="lama_kp"

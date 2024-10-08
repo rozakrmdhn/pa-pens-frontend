@@ -10,6 +10,8 @@ import { Badge } from 'primereact/badge';
 import { MultiSelect } from 'primereact/multiselect';
 import { MagangService } from '@/services/service/MagangService';
 import { Toast } from 'primereact/toast';
+import { MahasiswaService } from '@/services/service/MahasiswaService';
+import { AnggotaService } from '@/services/service/AnggotaService';
 
 type Daftar = {
     id?: string | undefined;
@@ -17,11 +19,12 @@ type Daftar = {
     tempat_kp?: string;
     alamat?: string;
     kota?: string;
+    id_mahasiswa?: number;
 };
 
-interface InputValue {
-    name: string;
-    code: string;
+interface Mahasiswa {
+    id?: string | undefined;
+    nama?: string;
 };
 
 const FormPendaftaran = () => {
@@ -30,7 +33,8 @@ const FormPendaftaran = () => {
         lama_kp: '',
         tempat_kp: '',
         alamat: '',
-        kota: ''
+        kota: '',
+        id_mahasiswa: 0,
     };
 
     const router = useRouter();
@@ -38,12 +42,23 @@ const FormPendaftaran = () => {
     const [daftar, setDaftar] = useState<Daftar>(emptyDaftar);
     const [isEditMode, setIsEditMode] = useState(false);
 
+    const [mahasiswas, setMahasiswas] =useState<Mahasiswa[]>([]);
+    const [selectedMahasiswas, setSelectedMahasiswas] = useState<Mahasiswa[]>([]);
+
     const [multiselectValue, setMultiselectValue] = useState(null);
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
+    // Static session
+    sessionStorage.setItem('id_mahasiswa', '2');
+    const idMahasiswaFromSession = sessionStorage.getItem('id_mahasiswa');;
+
     const handleInputChange = (e: any, field: string) => {
         const value = e.target.value;
-        setDaftar({ ...daftar, [field]: value });
+        // setDaftar({ ...daftar, [field]: value });
+        setDaftar({
+            ...daftar,
+            [field]: field === 'id_mahasiswa' ? Number(value) : value,
+        });
     };
 
     // Breadcrumb
@@ -55,13 +70,6 @@ const FormPendaftaran = () => {
             label: isEditMode ? 'Edit Pendaftaran' : 'Pendaftaran', 
             command: () => router.push('/pengajuan/pendaftaran')
         }
-    ];
-
-    const multiselectValues: InputValue[] = [
-        { name: "M. Arif Nur Rohman", code: "AU" },
-        { name: "M. Arif Rahman Hadi", code: "BR" },
-        { name: "Ahmad Dwi Alfian", code: "CN" },
-        { name: "Aditya Putra Irfandi", code: "EG" }
     ];
 
     // Default Value Option
@@ -76,10 +84,10 @@ const FormPendaftaran = () => {
         { label: 'KP 6 Bulan', value: 'KP6'}
     ];
 
-    const itemTemplate = (option: InputValue) => {
+    const itemTemplate = (option: Mahasiswa) => {
         return (
             <div className="flex align-items-center">
-                <span className="ml-2">{option.name}</span>
+                <span className="ml-2">{option.nama}</span>
             </div>
         );
     };
@@ -94,9 +102,25 @@ const FormPendaftaran = () => {
         }
     };
 
-    useEffect(() => {
+    const loadMahasiswa = async () => {
+        try {
+            const data = await MahasiswaService.getMahasiswa();
+            setMahasiswas(data);
+        } catch (error) {
+            console.log('Failed to load data', error);
+        }
+    };
 
-    }, []);
+    useEffect(() => {
+        loadMahasiswa();
+        if (idMahasiswaFromSession) {
+            // set id_mahasiswa
+            setDaftar((prevDaftar) => ({
+                ...prevDaftar,
+                id_mahasiswa: Number(idMahasiswaFromSession),
+            }));
+        }
+    }, [idMahasiswaFromSession]);
 
     return (
         <div className="grid">
@@ -188,11 +212,11 @@ const FormPendaftaran = () => {
                             <label htmlFor="catatan_koordkp" className="col-12 mb-2 md:col-2 md:mb-0">Anggota Kelompok</label>
                             <div className="col-12 md:col-6">
                                 <MultiSelect
-                                    value={multiselectValue}
-                                    onChange={(e) => setMultiselectValue(e.value)}
-                                    options={multiselectValues}
+                                    value={selectedMahasiswas}
+                                    onChange={(e) => setSelectedMahasiswas(e.value)}
+                                    options={mahasiswas}
                                     itemTemplate={itemTemplate}
-                                    optionLabel="name"
+                                    optionLabel="nama"
                                     placeholder="Pilih Anggota"
                                     filter
                                     className="multiselect-custom"

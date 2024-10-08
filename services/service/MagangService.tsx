@@ -33,10 +33,19 @@ export const MagangService = {
             });
     },
     updatePengajuan(id: string, daftarData: Daftar) {
+        console.log(daftarData);
         return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}`, daftarData)
             .then((response) => response.data)
             .catch((error) => {
                 console.error("There was an error updating the data!", error);
+                throw error;
+            });
+    },
+    getAnggotaByPengajuan(id: string) {
+        return axios.get(`${process.env.API_HOST}/magang/pengajuan/${id}/anggota`)
+            .then((response) => response.data)
+            .catch((error) => {
+                console.error(error);
                 throw error;
             });
     },
