@@ -19,11 +19,11 @@ type Daftar = {
     tempat_kp?: string;
     alamat?: string;
     kota?: string;
-    id_mahasiswa?: number;
+    id_mahasiswa?: string;
 };
 
 interface Mahasiswa {
-    id?: string | undefined;
+    id?: string;
     nama?: string;
 };
 
@@ -34,7 +34,7 @@ const FormPendaftaran = () => {
         tempat_kp: '',
         alamat: '',
         kota: '',
-        id_mahasiswa: 0,
+        id_mahasiswa: '',
     };
 
     const router = useRouter();
@@ -42,24 +42,10 @@ const FormPendaftaran = () => {
     const [daftar, setDaftar] = useState<Daftar>(emptyDaftar);
     const [isEditMode, setIsEditMode] = useState(false);
 
-    const [mahasiswas, setMahasiswas] =useState<Mahasiswa[]>([]);
-    const [selectedMahasiswas, setSelectedMahasiswas] = useState<Mahasiswa[]>([]);
+    const [mahasiswas, setMahasiswas] = useState<Mahasiswa[]>([]);
 
-    const [multiselectValue, setMultiselectValue] = useState(null);
+    const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Mahasiswa | null>(null);
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
-
-    // Static session
-    sessionStorage.setItem('id_mahasiswa', '2');
-    const idMahasiswaFromSession = sessionStorage.getItem('id_mahasiswa');;
-
-    const handleInputChange = (e: any, field: string) => {
-        const value = e.target.value;
-        // setDaftar({ ...daftar, [field]: value });
-        setDaftar({
-            ...daftar,
-            [field]: field === 'id_mahasiswa' ? Number(value) : value,
-        });
-    };
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -83,22 +69,37 @@ const FormPendaftaran = () => {
         { label: 'KP 3 Bulan Kedua', value: 'KP3Kedua'},
         { label: 'KP 6 Bulan', value: 'KP6'}
     ];
+    const dropdownOptions = mahasiswas.map((data) => ({
+        label: data.nama,
+        value: data.id
+    }));
 
-    const itemTemplate = (option: Mahasiswa) => {
-        return (
-            <div className="flex align-items-center">
-                <span className="ml-2">{option.nama}</span>
-            </div>
-        );
+    const handleInputChange = (e: any, field: string) => {
+        const value = e.target.value;
+        setDaftar({ 
+            ...daftar, 
+            [field]: value,
+            id_mahasiswa: dropdownMahasiswa ? dropdownMahasiswa.toString() : undefined,
+        });
+    };
+
+    const handleDropdownChange = (e: any) => {
+        const selectedMahasiswa = e.value;
+        setDropdownMahasiswa(selectedMahasiswa); // Update the selected mahasiswa
+
+        setDaftar({ 
+            ...daftar,
+            id_mahasiswa: selectedMahasiswa.id,
+        });
     };
 
     const savePendaftaran = async () => {
-        console.log(daftar);
         try {
-            await MagangService.createPengajuan(daftar);
-            toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Data created successfully', life: 3000 });
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save data', life: 3000 });
+            const result = await MagangService.createPengajuan(daftar);
+            toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to save data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
@@ -113,14 +114,7 @@ const FormPendaftaran = () => {
 
     useEffect(() => {
         loadMahasiswa();
-        if (idMahasiswaFromSession) {
-            // set id_mahasiswa
-            setDaftar((prevDaftar) => ({
-                ...prevDaftar,
-                id_mahasiswa: Number(idMahasiswaFromSession),
-            }));
-        }
-    }, [idMahasiswaFromSession]);
+    }, []);
 
     return (
         <div className="grid">
@@ -141,9 +135,22 @@ const FormPendaftaran = () => {
                 <div className="card p-3">
                     <div className='p-fluid'>
                         <div className="field grid">
+                            <label htmlFor="lama_kp" className="col-12 mb-2 md:col-2 md:mb-0">Ref Mhs</label>
+                            <div className="col-12 md:col-5">
+                                <Dropdown
+                                    id="id_mahasiswa"
+                                    value={dropdownMahasiswa}
+                                    options={dropdownOptions}
+                                    optionLabel="label"
+                                    // onChange={(e) => setDropdownMahasiswa(e.value)}
+                                    onChange={handleDropdownChange}
+                                    placeholder='Ref Mhs' />
+                            </div>
+                        </div>
+                        <div className="field grid">
                             <label htmlFor="dosbing" className="col-12 mb-2 md:col-2 md:mb-0">Nama</label>
                             <div className="col-12 md:col-10">
-                                Abdul Rozak Ramadhoni
+                                -
                             </div>
                         </div>
                         <div className="field grid">
@@ -193,7 +200,8 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="sts_persetujuan" className="col-12 mb-2 md:col-2 md:mb-0">Status Persetujuan</label>
                             <div className="col-12 md:col-10">
-                                <Badge value="Disetujui" severity='success'></Badge>
+                                -
+                                {/* <Badge value="Disetujui" severity='success'></Badge> */}
                             </div>
                         </div>
                         <div className="field grid">
@@ -208,27 +216,11 @@ const FormPendaftaran = () => {
                                 -
                             </div>
                         </div>
-                        <div className="field grid">
-                            <label htmlFor="catatan_koordkp" className="col-12 mb-2 md:col-2 md:mb-0">Anggota Kelompok</label>
-                            <div className="col-12 md:col-6">
-                                <MultiSelect
-                                    value={selectedMahasiswas}
-                                    onChange={(e) => setSelectedMahasiswas(e.value)}
-                                    options={mahasiswas}
-                                    itemTemplate={itemTemplate}
-                                    optionLabel="nama"
-                                    placeholder="Pilih Anggota"
-                                    filter
-                                    className="multiselect-custom"
-                                    display="chip"
-                                />
-                            </div>
-                        </div>
                     </div>
                     <div className='field grid'>
                         <div className='md:col-2'></div>
                         <div className='md:col-6'>
-                            <Button label="Batal" icon="pi pi-times" size="small" className="p-button-text mr-2" />
+                            <Button label="Batal" severity='secondary' icon="pi pi-times" size="small" className="mr-2" outlined />
                             <Button label="Simpan" icon="pi pi-check" size="small" onClick={savePendaftaran} />
                         </div>
                     </div>

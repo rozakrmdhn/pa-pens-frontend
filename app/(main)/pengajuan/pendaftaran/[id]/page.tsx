@@ -14,6 +14,7 @@ import { MahasiswaService } from '@/services/service/MahasiswaService';
 import { AnggotaService } from '@/services/service/AnggotaService';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
+import { Dialog } from 'primereact/dialog';
 
 type Daftar = {
     id?: string | undefined;
@@ -21,6 +22,9 @@ type Daftar = {
     tempat_kp?: string;
     alamat?: string;
     kota?: string;
+    status_persetujuan?: number;
+    bulan?: number;
+    tahun?: number;
     mahasiswa?: {
         nama?: string;
     };
@@ -38,6 +42,10 @@ type Anggota = {
     id?: string | undefined;
     id_mahasiswa?: string;
     id_daftar?: string;
+    mahasiswa?: {
+        nrp?: string;
+        nama?: string;
+    };
 };
 
 const FormPendaftaran = () => {
@@ -46,7 +54,9 @@ const FormPendaftaran = () => {
         lama_kp: '',
         tempat_kp: '',
         alamat: '',
-        kota: ''
+        kota: '',
+        bulan: 0,
+        tahun: 0
     };
 
     const router = useRouter();
@@ -56,16 +66,25 @@ const FormPendaftaran = () => {
     const [isEditMode, setIsEditMode] = useState(false);
 
     const [mahasiswas, setMahasiswas] = useState<Mahasiswa[]>([]);
+
     const [anggotas, setAnggotas] = useState<Anggota[]>();
+    const [anggota, setAnggota] = useState<Anggota>();
 
     const [selectedMahasiswas, setSelectedMahasiswas] = useState<Mahasiswa[]>([]);
 
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
+    const [dropdownSelectedBulan, setDropdownSelectedBulan] = useState(null);
+    const [dropdownSelectedTahun, setDropdownSelectedTahun] = useState(null);
+
+    // Dialog Delete Anggota
+    const [deleteMahasiswaDialog, setDeleteMahasiswaDialog] = useState(false);
 
     const handleInputChange = (e: any, field: string) => {
         const value = e.target.value;
         setDaftar({ ...daftar, [field]: value });
     };
+
+    console.log(daftar);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -82,12 +101,30 @@ const FormPendaftaran = () => {
     const dropdownTAValues = [
         { label: '2024/2025', value: '2024' },
     ];
-
     // Default Value Option
     const dropdownKPValues = [
         { label: 'KP 3 Bulan Pertama', value: 'KP3Pertama' },
         { label: 'KP 3 Bulan Kedua', value: 'KP3Kedua'},
         { label: 'KP 6 Bulan', value: 'KP6'}
+    ];
+    // Bulan Value Option
+    const dropdownBulanValue = [
+        { label: 'Januari', value: 1 },
+        { label: 'Februari', value: 2 },
+        { label: 'Maret', value: 3 },
+        { label: 'April', value: 4 },
+        { label: 'Mei', value: 5 },
+        { label: 'Juni', value: 6 },
+        { label: 'Juli', value: 7 },
+        { label: 'Agustus', value: 8 },
+        { label: 'September', value: 9 },
+        { label: 'Oktober', value: 10 },
+        { label: 'November', value: 11 },
+        { label: 'Desember', value: 12 },
+    ];
+    // Tahun Value Option
+    const dropdownTahunValue = [
+        { label: '2024', value: 2024 },
     ];
 
     const itemTemplate = (option: Mahasiswa) => {
@@ -101,28 +138,37 @@ const FormPendaftaran = () => {
     const savePendaftaran = async () => {
         try {
             if (daftar.id) {
-                await MagangService.updatePengajuan(daftar.id, daftar);
-                toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Data updated successfully', life: 3000 });
+                const result = await MagangService.updatePengajuan(daftar.id, daftar);
+                toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             } else {
-                await MagangService.createPengajuan(daftar);
-                toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Data created successfully', life: 3000 });
+                const result = await MagangService.createPengajuan(daftar);
+                toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
             }
-        } catch (error) {
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to save data';
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save data', life: 3000 });
         }
     };
 
     const saveAnggota = async () => {
         try {
-            const bulkData = selectedMahasiswas.map((mahasiswa) => ({
-                id_mahasiswa: mahasiswa.id,
-                id_daftar: daftar.id,
-            }));
-            AnggotaService.createBulkAnggota({ mahasiswaList: bulkData });
-            toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Data updated successfully', life: 3000 });
+            if (daftar.id) {
+                const bulkData = selectedMahasiswas.map((mahasiswa) => ({
+                    id_mahasiswa: mahasiswa.id,
+                    id_daftar: daftar.id,
+                }));
+    
+                const result = await AnggotaService.createBulkAnggota({ mahasiswaList: bulkData });
+                toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
+                loadAnggota(id);
+            } else {
 
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save data', life: 3000 });
+            }
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to save data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+        } finally {
+            loadAnggota(id);
         }
     };
 
@@ -153,6 +199,43 @@ const FormPendaftaran = () => {
             console.log('Failed to load data', error);
         }
     };
+
+    // Action Button
+    const actionBodyTemplate = (rowData: Anggota) => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={ () => confirmDeleteMahasiswa(rowData) } />
+            </React.Fragment>
+        );
+    };
+    // Action Button for Delete Dialog
+    const hideDeleteMahasiswaDialog = () => {
+        setDeleteMahasiswaDialog(false);
+    };
+    // Delete Data
+    const deleteMahasiswa = async () => {
+        try {
+            if (anggota?.id) {
+                await AnggotaService.deleteAnggota(anggota.id);
+                setAnggotas(anggotas?.filter(d => d.id !== anggota.id));
+                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Mahasiswa deleted successfully', life: 3000 });
+            }
+            setDeleteMahasiswaDialog(false);
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
+        }
+    };
+    const confirmDeleteMahasiswa = (anggota: Anggota) => {
+        setAnggota({ ...anggota });
+        // console.log(dosen);
+        setDeleteMahasiswaDialog(true);
+    };
+    const deleteDialogFooter = (
+        <>
+            <Button label="No" icon="pi pi-times" size="small" text onClick={hideDeleteMahasiswaDialog} />
+            <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteMahasiswa} />
+        </>
+    );
 
     useEffect(() => {
         loadMahasiswa();
@@ -219,10 +302,21 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="waktu" className="col-12 mb-2 md:col-2 md:mb-0">Waktu</label>
                             <div className="col-12 md:col-3">
-                                <InputText id='waktu' type='text' placeholder='Bulan' />
+                                <Dropdown 
+                                    id="bulan" 
+                                    value={daftar?.bulan} 
+                                    options={dropdownBulanValue}
+                                    optionLabel='label'
+                                    onChange={(e) => handleInputChange(e, 'bulan')}
+                                    placeholder='Bulan' />
                             </div>
                             <div className="col-12 md:col-3">
-                                <InputText id='waktu' type='text' placeholder='Tahun' />
+                                <Dropdown 
+                                    id="tahun" 
+                                    value={daftar?.tahun} 
+                                    options={dropdownTahunValue} 
+                                    onChange={(e) => handleInputChange(e, 'bulan')}
+                                    placeholder='Tahun' />
                             </div>
                         </div>
                         <div className="field grid">
@@ -234,7 +328,8 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="sts_persetujuan" className="col-12 mb-2 md:col-2 md:mb-0">Status Persetujuan</label>
                             <div className="col-12 md:col-10">
-                                <Badge value="Disetujui" severity='success'></Badge>
+                                -
+                                {/* <Badge value="Disetujui" severity='success'></Badge> */}
                             </div>
                         </div>
                         <div className="field grid">
@@ -250,13 +345,14 @@ const FormPendaftaran = () => {
                             </div>
                         </div>
                     </div>
+                    { !daftar.status_persetujuan && (
                     <div className='field grid'>
                         <div className='md:col-2'></div>
                         <div className='md:col-6'>
                             <Button label="Batal" severity='secondary' icon="pi pi-times" size="small" className='mr-2' outlined />
                             <Button label="Simpan" icon="pi pi-check" size="small" onClick={savePendaftaran} />
                         </div>
-                    </div>
+                    </div> )}
                 </div>
             </div>
             <div className="col-12">
@@ -283,18 +379,32 @@ const FormPendaftaran = () => {
                         </div>
                     </div>
                     <DataTable
-                        value={anggotas} >
+                        value={anggotas}
+                        showGridlines
+                        className="p-datatable-gridlines" >
                         <Column
-                            field='id_mahasiswa'
+                            field='mahasiswa.nrp'
                             header='NRP'
                             style={{ width: '8rem' }} />
                         <Column
-                            field='nama'
+                            field='mahasiswa.nama'
                             header='Nama Mahasiswa' />
                         <Column
                             header='Actions'
+                            alignHeader="center"
+                            bodyClassName='text-center'
+                            body={actionBodyTemplate}
                             style={{ minWidth: '7rem', width: '7rem' }} />
                     </DataTable>
+                    <Dialog visible={deleteMahasiswaDialog} style={{ width: '350px' }} header="Confirm" modal footer={deleteDialogFooter} onHide={hideDeleteMahasiswaDialog}>
+                        <div className="flex align-items-center justify-content-center">
+                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            { anggota && (
+                                <span>
+                                    Are you sure you want to delete <b>{anggota.mahasiswa?.nama}</b>?
+                                </span> )}
+                        </div>
+                    </Dialog>
                 </div>
             </div>
         </div>

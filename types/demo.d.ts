@@ -186,7 +186,7 @@ declare namespace Demo {
     // MahasiswaService
     type Mahasiswa = {
         id?: string | undefined;
-        nrp?: number;
+        nrp?: string;
         nama?: string;
         jenis_kelamin?: string;
         nomor_hp?: string;

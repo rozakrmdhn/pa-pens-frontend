@@ -23,17 +23,20 @@ type Daftar = {
     tempat_kp?: string;
     alamat?: string;
     kota?: string;
-    status_persetujuan?: string;
+    status_persetujuan?: number;
 };
 
 const Pengajuan = () => {
     const router = useRouter();
+    const dt = useRef<DataTable<any>>(null);
+    const menu = useRef<Menu>(null);
     const [pengajuan, setPengajuan] = useState<Daftar[]>([]);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
-    const menu = useRef<Menu>(null);
+
+    const [selectedRowData, setSelectedRowData] = useState(null); // State to track the selected row data
     
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -58,36 +61,8 @@ const Pengajuan = () => {
     };
 
     const initFilters = () => {
-        setFilters({
-            global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-            name: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-            },
-            'country.name': {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }]
-            },
-            representative: { value: null, matchMode: FilterMatchMode.IN },
-            date: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }]
-            },
-            balance: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
-            },
-            status: {
-                operator: FilterOperator.OR,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }]
-            },
-            activity: { value: null, matchMode: FilterMatchMode.BETWEEN },
-            verified: { value: null, matchMode: FilterMatchMode.EQUALS }
-        });
         setGlobalFilterValue('');
     };
-
-    const statuses = ['unqualified', 'qualified', 'new', 'negotiation', 'renewal', 'proposal'];
 
     const clearFilter = () => {
         initFilters();
@@ -133,28 +108,29 @@ const Pengajuan = () => {
         return <Calendar value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />;
     };
     const statusBodyTemplate = (rowData: Daftar) => {
-        // return <span className={`customer-badge status-${rowData.status}`}>{rowData.status}</span>;
-        return <Badge value="Disetujui" severity='success'></Badge>;
+        const statusText = rowData.status_persetujuan === 1 ? 'Disetujui' : 'Pending';
+        const statusSeverity = rowData.status_persetujuan === 1 ? 'success' : 'warning';
+
+        return <Badge value={statusText} severity={statusSeverity} />;
     };
-    const statusFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-        return <Dropdown value={options.value} options={statuses} onChange={(e) => options.filterCallback(e.value, options.index)} itemTemplate={statusItemTemplate} placeholder="Select a Status" className="p-column-filter" showClear />;
-    };
-    const statusItemTemplate = (option: any) => {
-        return <span className={`customer-badge status-${option}`}>{option}</span>;
-    };
-    const toggleMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
-        menu.current?.toggle(event);
+    const toggleMenu = (event: React.MouseEvent<HTMLButtonElement>, rowData: any) => {
+        setSelectedRowData(rowData); // Set the selected row data to be used in the menu
+        menu.current?.toggle(event); // Open the menu at the button's position
     };
     const handleInputChange = (e: any, field: string) => {
         const value = e.target.value;
         
     };
 
+    // Default Value Option
+    const dropdownTAValues = [
+        { label: '2024/2025', value: '2024' },
+    ];
     const overlayMenuItems = (rowData: any) => [
         {
             label: 'Ubah Usulan',
             icon: 'pi pi-pencil',
-            command: () => router.push(`/pengajuan/pendaftaran/${rowData.id}`)
+            command: () => router.push(`/pengajuan/pendaftaran/${rowData?.id}`)
         },
         {
             label: 'Verifikasi',
@@ -175,17 +151,20 @@ const Pengajuan = () => {
             icon: 'pi pi-user-plus'
         }
     ];
-    // Default Value Option
-    const dropdownTAValues = [
-        { label: '2024/2025', value: '2024' },
-    ];
     const header = renderHeader();
     // Action Button
     const actionBodyTemplate = (rowData: any) => {
         return (
             <React.Fragment>
-                <Menu ref={menu} model={overlayMenuItems(rowData)} popup />
-                <Button type="button" label="Opsi" icon="pi pi-angle-down" size="small" outlined onClick={toggleMenu} style={{ width: 'auto' }} />
+                <Menu ref={menu} model={overlayMenuItems(selectedRowData)} popup />
+                <Button 
+                    type="button" 
+                    label="Opsi" 
+                    icon="pi pi-angle-down" 
+                    size="small" 
+                    outlined 
+                    onClick={(e) => toggleMenu(e, rowData)}
+                    style={{ width: 'auto' }} />
             </React.Fragment>
         );
     };
@@ -207,6 +186,7 @@ const Pengajuan = () => {
                 </div>
                 <div className="card p-3">
                 <DataTable
+                    ref={dt}
                     value={pengajuan}
                     paginator
                     className="p-datatable-gridlines"
@@ -227,21 +207,17 @@ const Pengajuan = () => {
                             header="NRP" />
                         <Column 
                             field="mahasiswa.nama" 
-                            header="Nama" 
-                            filter 
-                            filterPlaceholder="Search by name" 
+                            header="Nama"
                             style={{ minWidth: '12rem' }} />
                         <Column
                             field="tempat_kp"
                             header="Tempat KP" />
                         <Column 
-                            field="" 
+                            field=""
                             header="Status" 
                             filterMenuStyle={{ width: '12rem' }} 
-                            style={{ minWidth: '10rem' }} 
-                            body={statusBodyTemplate} 
-                            filter 
-                            filterElement={statusFilterTemplate} />
+                            style={{ width: '7rem' }} 
+                            body={statusBodyTemplate} />
                         <Column
                             header="Actions"
                             style={{ minWidth: '7rem', width: '7rem' }}

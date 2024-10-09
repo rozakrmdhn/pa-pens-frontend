@@ -6,6 +6,9 @@ type Daftar = {
     tempat_kp?: string;
     alamat?: string;
     kota?: string;
+    id_mahasiswa?: string;
+    bulan?: number;
+    tahu?: number;
 };
 
 export const MagangService = {

@@ -22,6 +22,7 @@ const Mahasiswa = () => {
 
     let emptyMahasiswa: Demo.Mahasiswa = {
         id: '',
+        nrp: '',
         nama: '',
         jenis_kelamin: '',
         nomor_hp: '',
@@ -255,6 +256,9 @@ const Mahasiswa = () => {
                             </div>
                         } >
                         <Column
+                            field='nrp'
+                            header='NRP' />
+                        <Column
                             field="nama" 
                             header="Nama" 
                             filter
@@ -291,6 +295,10 @@ const Mahasiswa = () => {
                     </DataTable>
 
                     <Dialog visible={mahasiswaDialog} header={mahasiswa.id ? "Edit Mahasiswa" : "New Mahasiswa"} style={{ width: '450px' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
+                        <div className="field">
+                            <label htmlFor="nrp">NRP</label>
+                            <InputText id="nrp" autoComplete="off" value={mahasiswa.nrp || ''} onChange={(e) => handleInputChange(e, 'nrp')} />
+                        </div>
                         <div className="field">
                             <label htmlFor="nama">Nama</label>
                             <InputText id="nama" autoComplete="off" aria-describedby="nama-help" required value={mahasiswa.nama || ''} onChange={(e) => handleInputChange(e, 'nama')} />
