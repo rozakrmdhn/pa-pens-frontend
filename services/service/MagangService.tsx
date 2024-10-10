@@ -8,7 +8,10 @@ type Daftar = {
     kota?: string;
     id_mahasiswa?: string;
     bulan?: number;
-    tahu?: number;
+    tahun?: number;
+    // id_dosen?: string;
+    status_persetujuan?: number;
+    catatan_koordinator_kp?: string;
 };
 
 export const MagangService = {
@@ -46,6 +49,22 @@ export const MagangService = {
     },
     getAnggotaByPengajuan(id: string) {
         return axios.get(`${process.env.API_HOST}/magang/pengajuan/${id}/anggota`)
+            .then((response) => response.data)
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    },
+    verifikasiPengajuan(id: string, daftarData: Daftar) {
+        return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}/verifikasi`, daftarData)
+            .then((response) => response.data)
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    },
+    plotingDosbim(id: string) {
+        return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}/ploting`)
             .then((response) => response.data)
             .catch((error) => {
                 console.error(error);

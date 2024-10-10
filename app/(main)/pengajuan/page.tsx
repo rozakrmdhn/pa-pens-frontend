@@ -16,6 +16,8 @@ import { Menu } from 'primereact/menu';
 import { Dialog } from 'primereact/dialog';
 import { MagangService } from '@/services/service/MagangService';
 import { Badge } from 'primereact/badge';
+import { RadioButton } from 'primereact/radiobutton';
+import { Toast } from 'primereact/toast';
 
 type Daftar = {
     id?: string | undefined;
@@ -24,20 +26,40 @@ type Daftar = {
     alamat?: string;
     kota?: string;
     status_persetujuan?: number;
+    catatan_koordinator_kp?: string;
 };
 
+
 const Pengajuan = () => {
+    let emptyDaftar: Daftar = {
+        id: '',
+        lama_kp: '',
+        tempat_kp: '',
+        alamat: '',
+        kota: '',
+        status_persetujuan: 0,
+        catatan_koordinator_kp: ''
+    };
+
     const router = useRouter();
+    const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
     const menu = useRef<Menu>(null);
-    const [pengajuan, setPengajuan] = useState<Daftar[]>([]);
+
+    const [pengajuans, setPengajuans] = useState<Daftar[]>([]);
+    const [pengajuan, setPengajuan] = useState<Daftar>(emptyDaftar);
+
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
+    const [submitted, setSubmitted] = useState(false);
     const [globalFilterValue, setGlobalFilterValue] = useState('');
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
     const [selectedRowData, setSelectedRowData] = useState(null); // State to track the selected row data
     
+    // Verifikasi Dialog
+    const [verifikasiDialog, setVerifikasiDialog] = useState(false);
+
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
@@ -58,6 +80,17 @@ const Pengajuan = () => {
             month: '2-digit',
             year: 'numeric'
         });
+    };
+
+    // Open Verifikasi Dialog
+    const openVerifikasi = (pengajuan: Daftar) => {
+        setPengajuan({ ...pengajuan});
+        setVerifikasiDialog(true);
+    };
+    // Hide Verifikasi Dialog
+    const hideDialog = () => {
+        setSubmitted(false);
+        setVerifikasiDialog(false);
     };
 
     const initFilters = () => {
@@ -92,11 +125,15 @@ const Pengajuan = () => {
         );
     };
 
-    useEffect(() => {
+    const loadPengajuan = async () => {
         MagangService.getPengajuan().then((data) => {
-            setPengajuan(getData(data));
+            setPengajuans(getData(data));
             setLoading(false);
         });
+    };
+
+    useEffect(() => {
+        loadPengajuan();
 
         initFilters();
     }, []);
@@ -119,7 +156,7 @@ const Pengajuan = () => {
     };
     const handleInputChange = (e: any, field: string) => {
         const value = e.target.value;
-        
+        setPengajuan({ ...pengajuan, [field]: value});
     };
 
     // Default Value Option
@@ -134,7 +171,8 @@ const Pengajuan = () => {
         },
         {
             label: 'Verifikasi',
-            icon: 'pi pi-pencil'
+            icon: 'pi pi-pencil',
+            command: () => openVerifikasi(rowData)
         },
         {
             label: 'Monitoring',
@@ -152,6 +190,27 @@ const Pengajuan = () => {
         }
     ];
     const header = renderHeader();
+
+    // Proses Verifikasi
+    const simpanVerifikasi = async () => {
+        setSubmitted(true);
+        try {
+            // Ensure that pengajuan.id is defined
+            if (!pengajuan?.id) {
+                throw new Error('Pengajuan ID is missing');
+            }
+            // Proceed with the API call
+            const result = await MagangService.verifikasiPengajuan(pengajuan.id, pengajuan);
+            toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
+            loadPengajuan();
+            
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setVerifikasiDialog(false);
+        }
+    };
+    
     // Action Button
     const actionBodyTemplate = (rowData: any) => {
         return (
@@ -169,6 +228,14 @@ const Pengajuan = () => {
         );
     };
 
+    // Footer Button for Verifikasi
+    const dialogFooterVerifikasi = (
+        <div>
+            <Button label="Batal" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
+            <Button label="Simpan" icon="pi pi-check" size="small" onClick={simpanVerifikasi} />
+        </div>
+    );
+
     return (
         <div className="grid">
             <div className="col-12 pb-1">
@@ -185,20 +252,21 @@ const Pengajuan = () => {
                         placeholder='Tahun Ajaran' />
                 </div>
                 <div className="card p-3">
-                <DataTable
-                    ref={dt}
-                    value={pengajuan}
-                    paginator
-                    className="p-datatable-gridlines"
-                    showGridlines
-                    rows={10}
-                    dataKey="id"
-                    filters={filters}
-                    filterDisplay="menu"
-                    loading={loading}
-                    responsiveLayout="scroll"
-                    emptyMessage="No data found."
-                    header={header} >
+                    <Toast ref={toast} />
+                    <DataTable
+                        ref={dt}
+                        value={pengajuans}
+                        paginator
+                        className="p-datatable-gridlines"
+                        showGridlines
+                        rows={10}
+                        dataKey="id"
+                        filters={filters}
+                        filterDisplay="menu"
+                        loading={loading}
+                        responsiveLayout="scroll"
+                        emptyMessage="No data found."
+                        header={header} >
                         <Column
                             field="lama_kp"
                             header="Lama KP" />
@@ -226,6 +294,48 @@ const Pengajuan = () => {
                             body={actionBodyTemplate}
                             />
                     </DataTable>
+
+                    <Dialog 
+                        visible={verifikasiDialog} 
+                        onHide={hideDialog} 
+                        header="Verifikasi" 
+                        style={{ width: '350px' }} 
+                        modal 
+                        footer={dialogFooterVerifikasi}
+                        >
+                        <div className='flex flex-wrap gap-3'>
+                            <div className="flex align-items-center">
+                                <RadioButton 
+                                    inputId="setujui" 
+                                    name="status_persetujuan" 
+                                    value={1} // Set value to 1 for 'Setujui'
+                                    onChange={(e) => handleInputChange(e, 'status_persetujuan')} 
+                                    checked={pengajuan?.status_persetujuan === 1 || false} // Check if value is 1
+                                />
+                                <label htmlFor="setujui" className="ml-2">Setujui</label>
+                            </div>
+                            <div className="flex align-items-center">
+                                <RadioButton 
+                                    inputId="tolak" 
+                                    name="status_persetujuan" 
+                                    value={0} // Set value to 0 for 'Tolak'
+                                    onChange={(e) => handleInputChange(e, 'status_persetujuan')} 
+                                    checked={pengajuan?.status_persetujuan === 0 || false} // Check if value is 0
+                                />
+                                <label htmlFor="tolak" className="ml-2">Tolak</label>
+                            </div>
+                        </div>
+                        <div className='p-fluid mt-3'>
+                            <div className='field'>
+                                <InputText 
+                                    id='catatan_koordinator_kp' 
+                                    placeholder='Catatan'
+                                    value={pengajuan?.catatan_koordinator_kp || ''} 
+                                    onChange={(e) => handleInputChange(e, 'catatan_koordinator_kp')} 
+                                />
+                            </div>
+                        </div>
+                    </Dialog>
                 </div>
             </div>
         </div>

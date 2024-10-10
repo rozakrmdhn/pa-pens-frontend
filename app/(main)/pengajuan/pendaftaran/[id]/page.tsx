@@ -315,7 +315,7 @@ const FormPendaftaran = () => {
                                     id="tahun" 
                                     value={daftar?.tahun} 
                                     options={dropdownTahunValue} 
-                                    onChange={(e) => handleInputChange(e, 'bulan')}
+                                    onChange={(e) => handleInputChange(e, 'tahun')}
                                     placeholder='Tahun' />
                             </div>
                         </div>
