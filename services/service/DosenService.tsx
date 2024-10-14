@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { Demo } from '@/types';
+import { Master } from '@/types';
 
 export const DosenService = {
     getDosen() {
         return axios.get(`${process.env.API_HOST}/dosen`)
-            .then((response) => response.data.data as Demo.Dosen[])
+            .then((response) => response.data.data as Master.Dosen[])
             .catch((error) => {
                 throw error;
             });
@@ -17,7 +17,7 @@ export const DosenService = {
                 throw error;
             });
     },
-    createDosen(dosenData: Demo.Dosen) {
+    createDosen(dosenData: Master.Dosen) {
         return axios.post(`${process.env.API_HOST}/dosen`, dosenData)
             .then((response) => response.data)
             .catch((error) => {
@@ -25,7 +25,7 @@ export const DosenService = {
                 throw error;
             });
     },
-    updateDosen(id: string, dosenData: Demo.Dosen) {
+    updateDosen(id: string, dosenData: Master.Dosen) {
         return axios.put(`${process.env.API_HOST}/dosen/${id}`, dosenData)
             .then((response) => response.data)
             .catch((error) => {

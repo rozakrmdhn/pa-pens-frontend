@@ -1,23 +1,10 @@
 import axios from "axios";
-
-type Daftar = {
-    id?: string | undefined;
-    lama_kp?: string;
-    tempat_kp?: string;
-    alamat?: string;
-    kota?: string;
-    id_mahasiswa?: string;
-    bulan?: number;
-    tahun?: number;
-    // id_dosen?: string;
-    status_persetujuan?: number;
-    catatan_koordinator_kp?: string;
-};
+import { Magang } from '@/types';
 
 export const MagangService = {
     getPengajuan() {
         return axios.get(`${process.env.API_HOST}/magang`)
-            .then((response) => response.data.data as Daftar[])
+            .then((response) => response.data.data as Magang.Daftar[])
             .catch((error) => {
                 throw error;
             });
@@ -30,7 +17,7 @@ export const MagangService = {
                 throw error;
             });
     },
-    createPengajuan(daftarData: Daftar) {
+    createPengajuan(daftarData: Magang.Daftar) {
         return axios.post(`${process.env.API_HOST}/magang/pengajuan`, daftarData)
             .then((response) => response.data)
             .catch((error) => {
@@ -38,7 +25,7 @@ export const MagangService = {
                 throw error;
             });
     },
-    updatePengajuan(id: string, daftarData: Daftar) {
+    updatePengajuan(id: string, daftarData: Magang.Daftar) {
         console.log(daftarData);
         return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}`, daftarData)
             .then((response) => response.data)
@@ -55,7 +42,7 @@ export const MagangService = {
                 throw error;
             });
     },
-    verifikasiPengajuan(id: string, daftarData: Daftar) {
+    verifikasiPengajuan(id: string, daftarData: Magang.Daftar) {
         return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}/verifikasi`, daftarData)
             .then((response) => response.data)
             .catch((error) => {
@@ -63,8 +50,8 @@ export const MagangService = {
                 throw error;
             });
     },
-    plotingDosbim(id: string) {
-        return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}/ploting`)
+    plotingDosbim(id: string, daftarData: Magang.Daftar) {
+        return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}/ploting`, daftarData)
             .then((response) => response.data)
             .catch((error) => {
                 console.error(error);

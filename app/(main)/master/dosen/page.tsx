@@ -11,8 +11,8 @@ import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
-import { Demo } from '@/types';
 import { DosenService } from '@/services/service/DosenService';
+import { Demo, Master, Magang } from '@/types';
 
 const Dosen = () => {
     useEffect(() => {
@@ -20,7 +20,7 @@ const Dosen = () => {
         initFilters();
     }, []);
 
-    let emptyDosen: Demo.Dosen = {
+    let emptyDosen: Master.Dosen = {
         id: '',
         nama: '',
         jenis_kelamin: '',
@@ -38,8 +38,8 @@ const Dosen = () => {
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [globalFilterValue, setGlobalFilterValue] = useState('');
 
-    const [dosens, setDosens] = useState<Demo.Dosen[]>([]);
-    const [dosen, setDosen] = useState<Demo.Dosen>(emptyDosen);
+    const [dosens, setDosens] = useState<Master.Dosen[]>([]);
+    const [dosen, setDosen] = useState<Master.Dosen>(emptyDosen);
 
     // Dialog
     const [deleteDosenDialog, setDeleteDosenDialog] = useState(false);
@@ -95,19 +95,19 @@ const Dosen = () => {
         setDeleteDosenDialog(false);
     };
 
-    const confirmDeleteDosen = (dosen: Demo.Dosen) => {
+    const confirmDeleteDosen = (dosen: Master.Dosen) => {
         setDosen({ ...dosen });
         // console.log(dosen);
         setDeleteDosenDialog(true);
     };
 
-    const editDosen = (dosen: Demo.Dosen) => {
+    const editDosen = (dosen: Master.Dosen) => {
         setDosen({ ...dosen });
         // console.log(dosen);
         setDosenDialog(true);
     };
 
-    const getData = (data: Demo.Dosen[]) => {
+    const getData = (data: Master.Dosen[]) => {
         return [...(data || [])].map((d) => {
             return d;
         });
@@ -132,11 +132,11 @@ const Dosen = () => {
         if (dosen.nama?.trim()) {
             try {
                 if (dosen.id) {
-                    await DosenService.updateDosen(dosen.id, dosen);  // Update API call
-                    toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Dosen updated successfully', life: 3000 });
+                    const result = await DosenService.updateDosen(dosen.id, dosen);  // Update API call
+                    toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
                 } else {
-                    await DosenService.createDosen(dosen);  // Create API call
-                    toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Dosen created successfully', life: 3000 });
+                    const result = await DosenService.createDosen(dosen);  // Create API call
+                    toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
                 }
                 fetchDosen();  // Re-fetch the updated list
             } catch (error) {
@@ -151,9 +151,9 @@ const Dosen = () => {
     const deleteDosen = async () => {
         try {
             if (dosen.id) {
-                await DosenService.deleteDosen(dosen.id);
+                const result = await DosenService.deleteDosen(dosen.id);
                 setDosens(dosens.filter(d => d.id !== dosen.id));
-                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Dosen deleted successfully', life: 3000 });
+                toast.current?.show({ severity: result.status, summary: 'Success', detail: result.message, life: 3000 });
             }
             setDeleteDosenDialog(false);
         } catch (error) {
@@ -183,7 +183,7 @@ const Dosen = () => {
     };
     const header = renderHeader();
     // Action Button
-    const actionBodyTemplate = (rowData: Demo.Dosen) => {
+    const actionBodyTemplate = (rowData: Master.Dosen) => {
         return (
             <React.Fragment>
                 <Button icon="pi pi-pencil" outlined className="mr-2" size="small" onClick={() => editDosen(rowData)} />

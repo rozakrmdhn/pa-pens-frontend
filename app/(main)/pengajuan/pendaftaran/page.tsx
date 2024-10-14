@@ -8,43 +8,32 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Badge } from 'primereact/badge';
 import { MultiSelect } from 'primereact/multiselect';
-import { MagangService } from '@/services/service/MagangService';
 import { Toast } from 'primereact/toast';
+import { Demo, Master, Magang } from '@/types';
 import { MahasiswaService } from '@/services/service/MahasiswaService';
 import { AnggotaService } from '@/services/service/AnggotaService';
-
-type Daftar = {
-    id?: string | undefined;
-    lama_kp?: string;
-    tempat_kp?: string;
-    alamat?: string;
-    kota?: string;
-    id_mahasiswa?: string;
-};
-
-interface Mahasiswa {
-    id?: string;
-    nama?: string;
-};
+import { MagangService } from '@/services/service/MagangService';
 
 const FormPendaftaran = () => {
-    let emptyDaftar: Daftar = {
+    let emptyDaftar: Magang.Daftar = {
         id: '',
         lama_kp: '',
         tempat_kp: '',
         alamat: '',
         kota: '',
         id_mahasiswa: '',
+        bulan: 0,
+        tahun: 0
     };
 
     const router = useRouter();
     const toast = useRef<Toast>(null);
-    const [daftar, setDaftar] = useState<Daftar>(emptyDaftar);
+    const [daftar, setDaftar] = useState<Magang.Daftar>(emptyDaftar);
     const [isEditMode, setIsEditMode] = useState(false);
 
-    const [mahasiswas, setMahasiswas] = useState<Mahasiswa[]>([]);
+    const [mahasiswas, setMahasiswas] = useState<Master.Mahasiswa[]>([]);
 
-    const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Mahasiswa | null>(null);
+    const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Master.Mahasiswa | null>(null);
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
     // Breadcrumb
@@ -69,6 +58,25 @@ const FormPendaftaran = () => {
         { label: 'KP 3 Bulan Kedua', value: 'KP3Kedua'},
         { label: 'KP 6 Bulan', value: 'KP6'}
     ];
+    // Bulan Value Option
+    const dropdownBulanValue = [
+        { label: 'Januari', value: 1 },
+        { label: 'Februari', value: 2 },
+        { label: 'Maret', value: 3 },
+        { label: 'April', value: 4 },
+        { label: 'Mei', value: 5 },
+        { label: 'Juni', value: 6 },
+        { label: 'Juli', value: 7 },
+        { label: 'Agustus', value: 8 },
+        { label: 'September', value: 9 },
+        { label: 'Oktober', value: 10 },
+        { label: 'November', value: 11 },
+        { label: 'Desember', value: 12 },
+    ];
+    // Tahun Value Option
+    const dropdownTahunValue = [
+        { label: '2024', value: 2024 },
+    ];
     const dropdownOptions = mahasiswas.map((data) => ({
         label: data.nama,
         value: data.id
@@ -86,7 +94,6 @@ const FormPendaftaran = () => {
     const handleDropdownChange = (e: any) => {
         const selectedMahasiswa = e.value;
         setDropdownMahasiswa(selectedMahasiswa); // Update the selected mahasiswa
-
         setDaftar({ 
             ...daftar,
             id_mahasiswa: selectedMahasiswa.id,
@@ -95,6 +102,7 @@ const FormPendaftaran = () => {
 
     const savePendaftaran = async () => {
         try {
+            // Endpoint : api/magang/pengajuan
             const result = await MagangService.createPengajuan(daftar);
             toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
         } catch (error: any) {
@@ -104,7 +112,7 @@ const FormPendaftaran = () => {
     };
 
     const loadMahasiswa = async () => {
-        try {
+        try {// Endpoint : api/magang/mahasiswa
             const data = await MahasiswaService.getMahasiswa();
             setMahasiswas(data);
         } catch (error) {
@@ -185,10 +193,21 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="waktu" className="col-12 mb-2 md:col-2 md:mb-0">Waktu</label>
                             <div className="col-12 md:col-3">
-                                <InputText id='waktu' type='text' placeholder='Bulan' />
+                                <Dropdown 
+                                    id="bulan" 
+                                    value={daftar?.bulan} 
+                                    options={dropdownBulanValue}
+                                    optionLabel='label'
+                                    onChange={(e) => handleInputChange(e, 'bulan')}
+                                    placeholder='Bulan' />
                             </div>
                             <div className="col-12 md:col-3">
-                                <InputText id='waktu' type='text' placeholder='Tahun' />
+                                <Dropdown 
+                                    id="tahun" 
+                                    value={daftar?.tahun} 
+                                    options={dropdownTahunValue} 
+                                    onChange={(e) => handleInputChange(e, 'tahun')}
+                                    placeholder='Tahun' />
                             </div>
                         </div>
                         <div className="field grid">
@@ -201,7 +220,6 @@ const FormPendaftaran = () => {
                             <label htmlFor="sts_persetujuan" className="col-12 mb-2 md:col-2 md:mb-0">Status Persetujuan</label>
                             <div className="col-12 md:col-10">
                                 -
-                                {/* <Badge value="Disetujui" severity='success'></Badge> */}
                             </div>
                         </div>
                         <div className="field grid">

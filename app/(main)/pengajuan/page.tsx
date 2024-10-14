@@ -7,38 +7,35 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Button } from 'primereact/button';
-import { MahasiswaService } from '@/services/service/MahasiswaService';
-import { Demo } from '@/types';
 import { Calendar } from 'primereact/calendar';
 import { Dropdown } from 'primereact/dropdown';
-import Link from 'next/link';
 import { Menu } from 'primereact/menu';
 import { Dialog } from 'primereact/dialog';
-import { MagangService } from '@/services/service/MagangService';
 import { Badge } from 'primereact/badge';
 import { RadioButton } from 'primereact/radiobutton';
 import { Toast } from 'primereact/toast';
+import { Demo, Master, Magang } from '@/types';
+import { DosenService } from '@/services/service/DosenService';
+import { MagangService } from '@/services/service/MagangService';
 
-type Daftar = {
-    id?: string | undefined;
-    lama_kp?: string;
-    tempat_kp?: string;
-    alamat?: string;
-    kota?: string;
-    status_persetujuan?: number;
-    catatan_koordinator_kp?: string;
-};
-
+type DropdownOption = { label: string; value: string };
 
 const Pengajuan = () => {
-    let emptyDaftar: Daftar = {
+    useEffect(() => {
+        loadPengajuan();
+        loadDosen();
+        
+    }, []);
+
+    let emptyDaftar: Magang.Daftar = {
         id: '',
         lama_kp: '',
         tempat_kp: '',
         alamat: '',
         kota: '',
         status_persetujuan: 0,
-        catatan_koordinator_kp: ''
+        catatan_koordinator_kp: '',
+        id_dosen: ''
     };
 
     const router = useRouter();
@@ -46,19 +43,23 @@ const Pengajuan = () => {
     const dt = useRef<DataTable<any>>(null);
     const menu = useRef<Menu>(null);
 
-    const [pengajuans, setPengajuans] = useState<Daftar[]>([]);
-    const [pengajuan, setPengajuan] = useState<Daftar>(emptyDaftar);
-
-    const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [loading, setLoading] = useState(true);
     const [submitted, setSubmitted] = useState(false);
-    const [globalFilterValue, setGlobalFilterValue] = useState('');
+    const [filters, setFilters] = useState<DataTableFilterMeta>({});
+
+    const [pengajuans, setPengajuans] = useState<Magang.Daftar[]>([]);
+    const [pengajuan, setPengajuan] = useState<Magang.Daftar>(emptyDaftar);
+
+    const [dropdownDosenValue, setDropdownDosenValue] = useState<DropdownOption[]>([]);
+
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
     const [selectedRowData, setSelectedRowData] = useState(null); // State to track the selected row data
-    
+
     // Verifikasi Dialog
     const [verifikasiDialog, setVerifikasiDialog] = useState(false);
+    // Ploting Dosbing Dialog
+    const [plotingDialog, setPlotingDialog] = useState(false);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -67,7 +68,7 @@ const Pengajuan = () => {
         { label: 'Pengajuan', command: () => router.push('/pengajuan') }
     ];
 
-    const getData = (data: Daftar[]) => {
+    const getData = (data: Magang.Daftar[]) => {
         return [...(data || [])].map((d) => {
             // d.date = new Date('04-10-2024');
             return d;
@@ -83,7 +84,7 @@ const Pengajuan = () => {
     };
 
     // Open Verifikasi Dialog
-    const openVerifikasi = (pengajuan: Daftar) => {
+    const openVerifikasi = (pengajuan: Magang.Daftar) => {
         setPengajuan({ ...pengajuan});
         setVerifikasiDialog(true);
     };
@@ -93,50 +94,42 @@ const Pengajuan = () => {
         setVerifikasiDialog(false);
     };
 
-    const initFilters = () => {
-        setGlobalFilterValue('');
+    // Open Ploting Dosbing
+    const openPlotingDosbing = (pengajuan: Magang.Daftar) => {
+        setPengajuan({ ...pengajuan });
+        setPlotingDialog(true);
     };
-
-    const clearFilter = () => {
-        initFilters();
-    };
-
-    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const value = e.target.value;
-        let _filters1 = { ...filters };
-        (_filters1['global'] as any).value = value;
-
-        setFilters(_filters1);
-        setGlobalFilterValue(value);
-    };
-
-    const renderHeader = () => {
-        return (
-            <div className="flex justify-content-between">
-                <div>
-                    <span className="p-input-icon-left">
-                        <i className="pi pi-search" />
-                        <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" />
-                    </span>
-                    <Button type="button" className="ml-2" severity="secondary" icon="pi pi-filter-slash" size="small" outlined onClick={clearFilter} />
-                </div>
-                <Button icon="pi pi-plus" rounded onClick={() => router.push('/pengajuan/pendaftaran')} />
-            </div>
-        );
+    // Hide Ploting Dosbing
+    const hidePlotingDialog = () => {
+        setSubmitted(false);
+        setPlotingDialog(false);
     };
 
     const loadPengajuan = async () => {
-        MagangService.getPengajuan().then((data) => {
+        // Endpoint : api/magang
+        await MagangService.getPengajuan().then((data) => {
             setPengajuans(getData(data));
             setLoading(false);
         });
     };
 
-    useEffect(() => {
-        loadPengajuan();
-
-        initFilters();
-    }, []);
+    const getDataDosen = (data: Master.Dosen[]) => {
+        return (data || []).map((d) => ({
+            label: d.nama || '',  // Handle undefined values
+            value: d.id || '',    // Handle undefined values
+        }));
+    };
+    const loadDosen = async () => { 
+        try {
+            // Endpoint : api/magang/dosen
+            const data = await DosenService.getDosen();
+            setDropdownDosenValue(getDataDosen(data));  // Store transformed data for the dropdown
+        } catch (error) {
+            console.error("Error loading Dosen data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const dateBodyTemplate = (rowData: Demo.Customer) => {
         return formatDate(rowData.date);
@@ -144,8 +137,8 @@ const Pengajuan = () => {
     const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         return <Calendar value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />;
     };
-    const statusBodyTemplate = (rowData: Daftar) => {
-        const statusText = rowData.status_persetujuan === 1 ? 'Disetujui' : 'Pending';
+    const statusBodyTemplate = (rowData: Magang.Daftar) => {
+        const statusText = rowData.status_persetujuan === 1 ? 'Disetujui' : 'Belum Disetujui';
         const statusSeverity = rowData.status_persetujuan === 1 ? 'success' : 'warning';
 
         return <Badge value={statusText} severity={statusSeverity} />;
@@ -175,6 +168,11 @@ const Pengajuan = () => {
             command: () => openVerifikasi(rowData)
         },
         {
+            label: 'Ploting Dosbing',
+            icon: 'pi pi-user-plus',
+            command: () => openPlotingDosbing(rowData)
+        },
+        {
             label: 'Monitoring',
             icon: 'pi pi-desktop',
             command: () => router.push('/monitoring')
@@ -184,12 +182,7 @@ const Pengajuan = () => {
             icon: 'pi pi-file-edit',
             command: () => router.push('/logbook')
         },
-        {
-            label: 'Ploting Dosbing',
-            icon: 'pi pi-user-plus'
-        }
     ];
-    const header = renderHeader();
 
     // Proses Verifikasi
     const simpanVerifikasi = async () => {
@@ -200,14 +193,34 @@ const Pengajuan = () => {
                 throw new Error('Pengajuan ID is missing');
             }
             // Proceed with the API call
+            // Endpoint : api/magang/pengajuan/{id}/verifikasi
             const result = await MagangService.verifikasiPengajuan(pengajuan.id, pengajuan);
             toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             loadPengajuan();
-            
         } catch (error) {
             console.log(error);
         } finally {
             setVerifikasiDialog(false);
+        }
+    };
+
+    // Proses Ploting Dosen Pembimbing
+    const simpanPlotingDosbing = async () => {
+        setSubmitted(true);
+        try {
+            // Ensure that pengajuan.id is defined
+            if (!pengajuan?.id) {
+                throw new Error('Pengajuan ID is missing');
+            }
+            // Proceed with the API call
+            // Endpoint : api/magang/pengajuan/{id}/ploting
+            const result = await MagangService.plotingDosbim(pengajuan.id, pengajuan);
+            toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
+            loadPengajuan();
+        } catch (error) {
+            console.log(error);
+        } finally {
+            setPlotingDialog(false);
         }
     };
     
@@ -235,6 +248,28 @@ const Pengajuan = () => {
             <Button label="Simpan" icon="pi pi-check" size="small" onClick={simpanVerifikasi} />
         </div>
     );
+    //
+    const dialogFooterPlotingDosbing = (
+        <div>
+            <Button label="Batal" icon="pi pi-times" size="small" onClick={hidePlotingDialog} className="p-button-text" />
+            <Button label="Simpan" icon="pi pi-check" size="small" onClick={simpanPlotingDosbing} />
+        </div>
+    );
+
+    const renderHeader = () => {
+        return (
+            <div className="flex justify-content-between">
+                <div>
+                    <span className="p-input-icon-left">
+                        <i className="pi pi-search" />
+                        <InputText value='' placeholder="Pencarian" style={{ width: '92%' }} />
+                    </span>
+                </div>
+                <Button icon="pi pi-plus" rounded onClick={() => router.push('/pengajuan/pendaftaran')} />
+            </div>
+        );
+    };
+    const header = renderHeader();
 
     return (
         <div className="grid">
@@ -269,22 +304,27 @@ const Pengajuan = () => {
                         header={header} >
                         <Column
                             field="lama_kp"
+                            sortable
                             header="Lama KP" />
                         <Column
                             field="mahasiswa.nrp"
+                            sortable
                             header="NRP" />
                         <Column 
-                            field="mahasiswa.nama" 
+                            field="mahasiswa.nama"
+                            sortable
                             header="Nama"
                             style={{ minWidth: '12rem' }} />
                         <Column
                             field="tempat_kp"
+                            sortable
                             header="Tempat KP" />
                         <Column 
-                            field=""
                             header="Status" 
-                            filterMenuStyle={{ width: '12rem' }} 
-                            style={{ width: '7rem' }} 
+                            sortable
+                            style={{ width: '9rem' }}
+                            alignHeader="center"
+                            bodyClassName="text-center"
                             body={statusBodyTemplate} />
                         <Column
                             header="Actions"
@@ -333,6 +373,26 @@ const Pengajuan = () => {
                                     value={pengajuan?.catatan_koordinator_kp || ''} 
                                     onChange={(e) => handleInputChange(e, 'catatan_koordinator_kp')} 
                                 />
+                            </div>
+                        </div>
+                    </Dialog>
+
+                    <Dialog 
+                        visible={plotingDialog} 
+                        onHide={hidePlotingDialog} 
+                        header="Ploting Dosbing" 
+                        style={{ width: '350px' }} 
+                        modal 
+                        footer={dialogFooterPlotingDosbing} >
+                        <div className='p-fluid'>
+                            <div className="field">
+                                <Dropdown
+                                    id='id_dosen'
+                                    value={pengajuan.id_dosen}
+                                    options={dropdownDosenValue}
+                                    onChange={(e) => handleInputChange(e, 'id_dosen')}
+                                    placeholder='Pilih Dosen'
+                                    filter />
                             </div>
                         </div>
                     </Dialog>

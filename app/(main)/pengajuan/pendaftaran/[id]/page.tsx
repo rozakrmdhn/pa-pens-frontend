@@ -8,53 +8,23 @@ import { InputText } from 'primereact/inputtext';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Badge } from 'primereact/badge';
 import { MultiSelect } from 'primereact/multiselect';
-import { MagangService } from '@/services/service/MagangService';
 import { Toast } from 'primereact/toast';
-import { MahasiswaService } from '@/services/service/MahasiswaService';
-import { AnggotaService } from '@/services/service/AnggotaService';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Dialog } from 'primereact/dialog';
-
-type Daftar = {
-    id?: string | undefined;
-    lama_kp?: string;
-    tempat_kp?: string;
-    alamat?: string;
-    kota?: string;
-    status_persetujuan?: number;
-    bulan?: number;
-    tahun?: number;
-    mahasiswa?: {
-        nama?: string;
-    };
-    dosen?: {
-        nama?: string;
-    };
-};
-
-interface Mahasiswa {
-    id?: string | undefined;
-    nama?: string;
-};
-
-type Anggota = {
-    id?: string | undefined;
-    id_mahasiswa?: string;
-    id_daftar?: string;
-    mahasiswa?: {
-        nrp?: string;
-        nama?: string;
-    };
-};
+import { Demo, Master, Magang } from '@/types';
+import { MahasiswaService } from '@/services/service/MahasiswaService';
+import { AnggotaService } from '@/services/service/AnggotaService';
+import { MagangService } from '@/services/service/MagangService';
 
 const FormPendaftaran = () => {
-    let emptyDaftar: Daftar = {
+    let emptyDaftar: Magang.Daftar = {
         id: '',
         lama_kp: '',
         tempat_kp: '',
         alamat: '',
         kota: '',
+        id_mahasiswa: '',
         bulan: 0,
         tahun: 0
     };
@@ -62,19 +32,18 @@ const FormPendaftaran = () => {
     const router = useRouter();
     const { id } = useParams();
     const toast = useRef<Toast>(null);
-    const [daftar, setDaftar] = useState<Daftar>(emptyDaftar);
+    const [daftar, setDaftar] = useState<Magang.Daftar>(emptyDaftar);
     const [isEditMode, setIsEditMode] = useState(false);
+    const isPengajuanLoaded = useRef(false);
 
-    const [mahasiswas, setMahasiswas] = useState<Mahasiswa[]>([]);
+    const [mahasiswas, setMahasiswas] = useState<Master.Mahasiswa[]>([]);
 
-    const [anggotas, setAnggotas] = useState<Anggota[]>();
-    const [anggota, setAnggota] = useState<Anggota>();
+    const [anggotas, setAnggotas] = useState<Magang.Anggota[]>();
+    const [anggota, setAnggota] = useState<Magang.Anggota>();
 
-    const [selectedMahasiswas, setSelectedMahasiswas] = useState<Mahasiswa[]>([]);
+    const [selectedMahasiswas, setSelectedMahasiswas] = useState<Master.Mahasiswa[]>([]);
 
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
-    const [dropdownSelectedBulan, setDropdownSelectedBulan] = useState(null);
-    const [dropdownSelectedTahun, setDropdownSelectedTahun] = useState(null);
 
     // Dialog Delete Anggota
     const [deleteMahasiswaDialog, setDeleteMahasiswaDialog] = useState(false);
@@ -84,7 +53,7 @@ const FormPendaftaran = () => {
         setDaftar({ ...daftar, [field]: value });
     };
 
-    console.log(daftar);
+    console.log(isPengajuanLoaded);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -96,7 +65,6 @@ const FormPendaftaran = () => {
             command: () => router.push('/pengajuan/pendaftaran')
         }
     ];
-
     // Default Value Option
     const dropdownTAValues = [
         { label: '2024/2025', value: '2024' },
@@ -127,7 +95,7 @@ const FormPendaftaran = () => {
         { label: '2024', value: 2024 },
     ];
 
-    const itemTemplate = (option: Mahasiswa) => {
+    const itemTemplate = (option: Master.Mahasiswa) => {
         return (
             <div className="flex align-items-center">
                 <span className="ml-2">{option.nama}</span>
@@ -135,21 +103,25 @@ const FormPendaftaran = () => {
         );
     };
 
+    // Proses Simpan Pendaftaran
     const savePendaftaran = async () => {
         try {
             if (daftar.id) {
+                // Endpoint : api/magang/pengajuan/{id}
                 const result = await MagangService.updatePengajuan(daftar.id, daftar);
                 toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             } else {
+                // Endpoint : api/magang/pengajuan
                 const result = await MagangService.createPengajuan(daftar);
                 toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
             }
         } catch (error: any) {
             const errorMessage = error?.response?.data?.message || 'Failed to save data';
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save data', life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
+    // Proses Simpan Anggota
     const saveAnggota = async () => {
         try {
             if (daftar.id) {
@@ -157,9 +129,9 @@ const FormPendaftaran = () => {
                     id_mahasiswa: mahasiswa.id,
                     id_daftar: daftar.id,
                 }));
-    
+                // Endpoint : api/magang/anggota/bulk
                 const result = await AnggotaService.createBulkAnggota({ mahasiswaList: bulkData });
-                toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
+                toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
                 loadAnggota(id);
             } else {
 
@@ -173,26 +145,34 @@ const FormPendaftaran = () => {
     };
 
     const loadPengajuan = async (id: string) => {
-        try {
-            const pengajuan = await MagangService.getPengajuanById(id);
-            setDaftar(pengajuan.data);
-            setIsEditMode(true);  // We're in edit mode
-        } catch (error) {
-            console.error('Failed to load pengajuan data', error);
+        if (isPengajuanLoaded) {
+            try {
+                // Endpoint : api/magang/pengajuan/{id}
+                const result = await MagangService.getPengajuanById(id);
+                setDaftar(result.data);
+                setIsEditMode(true);
+                toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
+            } catch (error: any) {
+                const errorMessage = error?.response?.data?.message || 'Failed to save data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+            }
         }
     };
 
     const loadAnggota = async (id: string) => {
         try {
+            // Endpoint : api/magang/pengajuan/{id}/anggota
             const anggota = await MagangService.getAnggotaByPengajuan(id);
             setAnggotas(anggota.data);
-        } catch (error) {
-            
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to save data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
     const loadMahasiswa = async () => {
         try {
+            // Endpoint : api/magang/mahasiswa
             const data = await MahasiswaService.getMahasiswa();
             setMahasiswas(data);
         } catch (error) {
@@ -201,10 +181,14 @@ const FormPendaftaran = () => {
     };
 
     // Action Button
-    const actionBodyTemplate = (rowData: Anggota) => {
+    const actionBodyTemplate = (rowData: Magang.Anggota) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={ () => confirmDeleteMahasiswa(rowData) } />
+                { daftar.id_mahasiswa !== rowData?.id_mahasiswa && daftar.status_persetujuan === 0 ? (
+                    <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={ () => confirmDeleteMahasiswa(rowData) } />
+                ) : (
+                    <Button icon="pi pi-trash" outlined severity="secondary" size="small" onClick={ () => confirmDeleteMahasiswa(rowData) } disabled />
+                )}
             </React.Fragment>
         );
     };
@@ -215,19 +199,21 @@ const FormPendaftaran = () => {
     // Delete Data
     const deleteMahasiswa = async () => {
         try {
-            if (anggota?.id) {
-                await AnggotaService.deleteAnggota(anggota.id);
+            if (anggota?.id && daftar.id_mahasiswa !== anggota?.id_mahasiswa) {
+                // Endpoint : api/magang/anggota/{id}
+                const result = await AnggotaService.deleteAnggota(anggota.id);
                 setAnggotas(anggotas?.filter(d => d.id !== anggota.id));
-                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Mahasiswa deleted successfully', life: 3000 });
+                toast.current?.show({ severity: result.status, summary: 'Success', detail: result.message, life: 3000 });
+            } else {
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
             }
             setDeleteMahasiswaDialog(false);
         } catch (error) {
             toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
         }
     };
-    const confirmDeleteMahasiswa = (anggota: Anggota) => {
+    const confirmDeleteMahasiswa = (anggota: Magang.Anggota) => {
         setAnggota({ ...anggota });
-        // console.log(dosen);
         setDeleteMahasiswaDialog(true);
     };
     const deleteDialogFooter = (
@@ -238,11 +224,12 @@ const FormPendaftaran = () => {
     );
 
     useEffect(() => {
-        loadMahasiswa();
-        if (id) {
+        if (id && !isPengajuanLoaded.current) {
             // If an ID exists in the URL, load the pengajuan for editing
+            loadMahasiswa();
             loadPengajuan(id);
             loadAnggota(id);
+            isPengajuanLoaded.current = true;
         }
     }, [id]);
 
@@ -322,18 +309,21 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="dosbing" className="col-12 mb-2 md:col-2 md:mb-0">Dosen Pembimbing</label>
                             <div className="col-12 md:col-10">
-                                {daftar?.dosen?.nama}
+                                {daftar.id_dosen !== null ? (
+                                    daftar?.dosen?.nama
+                                ) : ( '-' )}
                             </div>
                         </div>
                         <div className="field grid">
-                            <label htmlFor="sts_persetujuan" className="col-12 mb-2 md:col-2 md:mb-0">Status Persetujuan</label>
+                            <label htmlFor="status_persetujuan" className="col-12 mb-2 md:col-2 md:mb-0">Status Persetujuan</label>
                             <div className="col-12 md:col-10">
-                                -
-                                {/* <Badge value="Disetujui" severity='success'></Badge> */}
+                                {daftar.status_persetujuan === 1 ? (
+                                <Badge value="Disetujui" severity="success" /> ) : (
+                                <Badge value="Belum Disetujui" severity="warning" /> )}
                             </div>
                         </div>
                         <div className="field grid">
-                            <label htmlFor="sts_dokumen" className="col-12 mb-2 md:col-2 md:mb-0">Status Dokumen</label>
+                            <label htmlFor="status_dokumen" className="col-12 mb-2 md:col-2 md:mb-0">Status Dokumen</label>
                             <div className="col-12 md:col-10">
                                 -
                             </div>
@@ -341,7 +331,7 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="catatan_koordkp" className="col-12 mb-2 md:col-2 md:mb-0">Catatan Koordinator KP</label>
                             <div className="col-12 md:col-10">
-                                -
+                                - 
                             </div>
                         </div>
                     </div>
@@ -357,27 +347,29 @@ const FormPendaftaran = () => {
             </div>
             <div className="col-12">
                 <div className="card p-3">
-                    <div className='p-fluid'>
-                        <div className="field grid">
-                            <label htmlFor="catatan_koordkp" className="col-12 mb-2 md:col-2 md:mb-0">Anggota Kelompok</label>
-                            <div className="col-4 md:col-4">
-                                <MultiSelect
-                                    value={selectedMahasiswas}
-                                    onChange={(e) => setSelectedMahasiswas(e.value)}
-                                    options={mahasiswas}
-                                    itemTemplate={itemTemplate}
-                                    optionLabel="nama"
-                                    placeholder="Pilih Anggota"
-                                    filter
-                                    className="multiselect-custom"
-                                    display="chip"
-                                />
-                            </div>
-                            <div className='col-2 md:col-2'>
-                                <Button icon="pi pi-plus" size="small" onClick={saveAnggota} />
+                    {daftar.status_persetujuan === 0 ? (
+                        <div className='p-fluid'>
+                            <div className="field grid">
+                                <label htmlFor="catatan_koordkp" className="col-12 mb-2 md:col-2 md:mb-0">Anggota Kelompok</label>
+                                <div className="col-4 md:col-4">
+                                    <MultiSelect
+                                        value={selectedMahasiswas}
+                                        onChange={(e) => setSelectedMahasiswas(e.value)}
+                                        options={mahasiswas}
+                                        itemTemplate={itemTemplate}
+                                        optionLabel="nama"
+                                        placeholder="Pilih Anggota"
+                                        filter
+                                        className="multiselect-custom"
+                                        display="chip"
+                                    />
+                                </div>
+                                <div className='col-2 md:col-2'>
+                                    <Button icon="pi pi-plus" size="small" onClick={saveAnggota} />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    ) : null }
                     <DataTable
                         value={anggotas}
                         showGridlines

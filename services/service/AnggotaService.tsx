@@ -1,6 +1,7 @@
 import axios from "axios";
+import { Magang } from '@/types';
 
-type Anggota = {
+type BulkDataAnggota = {
     mahasiswaList?: {
         id?: string | undefined;
         id_mahasiswa?: string;
@@ -9,7 +10,7 @@ type Anggota = {
 };
 
 export const AnggotaService = {
-    createBulkAnggota(daftarData: Anggota) {
+    createBulkAnggota(daftarData: BulkDataAnggota) {
         return axios.post(`${process.env.API_HOST}/magang/anggota/bulk`, daftarData)
             .then((response) => response.data)
             .catch((error) => {

@@ -5,7 +5,6 @@ import { BreadCrumb } from "primereact/breadcrumb";
 import { useRouter } from 'next/navigation';
 import { Toast } from 'primereact/toast';
 import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
-import { Demo } from '@/types';
 import { ConfirmDialog } from 'primereact/confirmdialog';
 import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
@@ -13,6 +12,7 @@ import { FilterMatchMode } from 'primereact/api';
 import { MahasiswaService } from '@/services/service/MahasiswaService';
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
+import { Demo, Master, Magang } from '@/types';
 
 const Mahasiswa = () => {
     useEffect(() => {
@@ -20,7 +20,7 @@ const Mahasiswa = () => {
         initFilters();
     }, []);
 
-    let emptyMahasiswa: Demo.Mahasiswa = {
+    let emptyMahasiswa: Master.Mahasiswa = {
         id: '',
         nrp: '',
         nama: '',
@@ -39,8 +39,8 @@ const Mahasiswa = () => {
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [globalFilterValue, setGlobalFilterValue] = useState('');
 
-    const [mahasiswas, setMahasiswas] = useState<Demo.Mahasiswa[]>([]);
-    const [mahasiswa, setMahasiswa] = useState<Demo.Mahasiswa>(emptyMahasiswa);
+    const [mahasiswas, setMahasiswas] = useState<Master.Dosen[]>([]);
+    const [mahasiswa, setMahasiswa] = useState<Master.Mahasiswa>(emptyMahasiswa);
 
     // Dialog
     const [deleteMahasiswaDialog, setDeleteMahasiswaDialog] = useState(false);
@@ -96,13 +96,13 @@ const Mahasiswa = () => {
         setDeleteMahasiswaDialog(false);
     };
 
-    const confirmDeleteMahasiswa = (dosen: Demo.Dosen) => {
+    const confirmDeleteMahasiswa = (dosen: Master.Dosen) => {
         setMahasiswa({ ...dosen });
         // console.log(dosen);
         setDeleteMahasiswaDialog(true);
     };
 
-    const editMahasiswa = (dosen: Demo.Dosen) => {
+    const editMahasiswa = (dosen: Master.Dosen) => {
         setMahasiswa({ ...dosen });
         // console.log(dosen);
         setMahasiswaDialog(true);
@@ -112,7 +112,7 @@ const Mahasiswa = () => {
         fetchMahasiswa();
     };
 
-    const getData = (data: Demo.Mahasiswa[]) => {
+    const getData = (data: Master.Mahasiswa[]) => {
         return [...(data || [])].map((d) => {
             return d;
         });
@@ -184,7 +184,7 @@ const Mahasiswa = () => {
     };
     const header = renderHeader();
     // Action Button
-    const actionBodyTemplate = (rowData: Demo.Dosen) => {
+    const actionBodyTemplate = (rowData: Master.Dosen) => {
         return (
             <React.Fragment>
                 <Button icon="pi pi-pencil" outlined className="mr-2" size="small" onClick={() => editMahasiswa(rowData)} />
@@ -315,6 +315,10 @@ const Mahasiswa = () => {
                         <div className="field">
                             <label htmlFor="alamat">Alamat</label>
                             <InputText id="alamat" autoComplete="off" value={mahasiswa.alamat || ''} onChange={(e) => handleInputChange(e, 'alamat')} />
+                        </div>
+                        <div className="field">
+                            <label htmlFor="alamat">Alamat</label>
+                            <InputText id="alamat" autoComplete="off" value={mahasiswa.jurusan || ''} onChange={(e) => handleInputChange(e, 'jurusan')} />
                         </div>
                     </Dialog>
 

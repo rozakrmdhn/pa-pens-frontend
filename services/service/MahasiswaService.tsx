@@ -1,10 +1,10 @@
 import axios from 'axios';
-import { Demo } from '@/types';
+import { Master } from '@/types';
 
 export const MahasiswaService = {
     getMahasiswa() {
         return axios.get(`${process.env.API_HOST}/mahasiswa`)
-            .then((response) => response.data.data as Demo.Mahasiswa[])
+            .then((response) => response.data.data as Master.Mahasiswa[])
             .catch((error) => {
                 throw error;
             });
@@ -17,7 +17,7 @@ export const MahasiswaService = {
                 throw error;
             });
     },
-    createMahasiswa(dosenData: Demo.Mahasiswa) {
+    createMahasiswa(dosenData: Master.Mahasiswa) {
         return axios.post(`${process.env.API_HOST}/mahasiswa`, dosenData)
             .then((response) => response.data)
             .catch((error) => {
@@ -25,7 +25,7 @@ export const MahasiswaService = {
                 throw error;
             });
     },
-    updateMahasiswa(id: string, dosenData: Demo.Mahasiswa) {
+    updateMahasiswa(id: string, dosenData: Master.Mahasiswa) {
         return axios.put(`${process.env.API_HOST}/mahasiswa/${id}`, dosenData)
             .then((response) => response.data)
             .catch((error) => {
