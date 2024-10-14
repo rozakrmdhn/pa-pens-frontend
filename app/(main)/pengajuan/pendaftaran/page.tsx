@@ -102,6 +102,7 @@ const FormPendaftaran = () => {
 
     const savePendaftaran = async () => {
         try {
+            console.log(daftar);
             // Endpoint : api/magang/pengajuan
             const result = await MagangService.createPengajuan(daftar);
             toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });

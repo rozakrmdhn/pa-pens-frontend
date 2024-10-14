@@ -347,7 +347,7 @@ const FormPendaftaran = () => {
             </div>
             <div className="col-12">
                 <div className="card p-3">
-                    {daftar.status_persetujuan === 0 ? (
+                    {daftar.status_persetujuan === 0 || daftar.status_persetujuan === null ? (
                         <div className='p-fluid'>
                             <div className="field grid">
                                 <label htmlFor="catatan_koordkp" className="col-12 mb-2 md:col-2 md:mb-0">Anggota Kelompok</label>
