@@ -32,4 +32,20 @@ declare namespace Magang {
             nama?: string;
         };
     };
+    
+    // LogbookService
+    type Logbook = {
+        id?: string | undefined;
+        id_anggota?: string;
+        tanggal?: Date;
+        jam_mulai?: string;
+        jam_selesai?: string;
+        kegiatan?: string;
+        kesesuaian_matkul_diajarkan?: number;
+        matkul_diajarkan?: string;
+        setujui_logbook?: number;
+        lampiran_laporan?: string;
+        lampiran_foto?: string;
+        catatan_pembimbing?: string;
+    };
 }

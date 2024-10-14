@@ -26,7 +26,6 @@ export const MagangService = {
             });
     },
     updatePengajuan(id: string, daftarData: Magang.Daftar) {
-        console.log(daftarData);
         return axios.put(`${process.env.API_HOST}/magang/pengajuan/${id}`, daftarData)
             .then((response) => response.data)
             .catch((error) => {
