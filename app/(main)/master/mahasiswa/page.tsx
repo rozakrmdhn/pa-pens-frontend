@@ -317,8 +317,8 @@ const Mahasiswa = () => {
                             <InputText id="alamat" autoComplete="off" value={mahasiswa.alamat || ''} onChange={(e) => handleInputChange(e, 'alamat')} />
                         </div>
                         <div className="field">
-                            <label htmlFor="alamat">Alamat</label>
-                            <InputText id="alamat" autoComplete="off" value={mahasiswa.jurusan || ''} onChange={(e) => handleInputChange(e, 'jurusan')} />
+                            <label htmlFor="jurusan">Jurusan</label>
+                            <InputText id="jurusan" autoComplete="off" value={mahasiswa.jurusan || ''} onChange={(e) => handleInputChange(e, 'jurusan')} />
                         </div>
                     </Dialog>
 
