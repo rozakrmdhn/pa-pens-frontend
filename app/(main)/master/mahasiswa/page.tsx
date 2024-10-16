@@ -42,7 +42,7 @@ const Mahasiswa = () => {
     const [mahasiswas, setMahasiswas] = useState<Master.Dosen[]>([]);
     const [mahasiswa, setMahasiswa] = useState<Master.Mahasiswa>(emptyMahasiswa);
 
-    // Dialog
+    // Dialog Mahasiswa State
     const [deleteMahasiswaDialog, setDeleteMahasiswaDialog] = useState(false);
     const [mahasiswaDialog, setMahasiswaDialog] = useState(false);
 

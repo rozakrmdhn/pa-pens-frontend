@@ -34,6 +34,9 @@ const FormPendaftaran = () => {
     const [mahasiswas, setMahasiswas] = useState<Master.Mahasiswa[]>([]);
 
     const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Master.Mahasiswa | null>(null);
+    
+    const [selectedDropdownMhs, setSelectedDropdownMhs] = useState(null)
+    
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
     // Breadcrumb
@@ -94,15 +97,10 @@ const FormPendaftaran = () => {
     const handleDropdownChange = (e: any) => {
         const selectedMahasiswa = e.value;
         setDropdownMahasiswa(selectedMahasiswa); // Update the selected mahasiswa
-        setDaftar({ 
-            ...daftar,
-            id_mahasiswa: selectedMahasiswa.id,
-        });
     };
 
     const savePendaftaran = async () => {
         try {
-            console.log(daftar);
             // Endpoint : api/magang/pengajuan
             const result = await MagangService.createPengajuan(daftar);
             toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
@@ -157,7 +155,7 @@ const FormPendaftaran = () => {
                             </div>
                         </div>
                         <div className="field grid">
-                            <label htmlFor="dosbing" className="col-12 mb-2 md:col-2 md:mb-0">Nama</label>
+                            <label htmlFor="nama" className="col-12 mb-2 md:col-2 md:mb-0">Nama</label>
                             <div className="col-12 md:col-10">
                                 -
                             </div>

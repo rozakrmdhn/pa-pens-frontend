@@ -12,6 +12,7 @@ import { Column } from 'primereact/column';
 import { Menu } from 'primereact/menu';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
 
 const Logbook = () => {
     let emptyLogbook: Magang.Logbook = {
@@ -37,15 +38,22 @@ const Logbook = () => {
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
     const menu = useRef<Menu>(null);
-
+    const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
 
-    // const [logbook, setLogbook] = useState<Magang.Logbook>(emptyLogbook);
+    // setState for Any Data
+    const [logbook, setLogbook] = useState<Magang.Logbook>(emptyLogbook);
     const [logbooks, setLogbooks] = useState<Magang.Logbook[]>([]);
     const [anggotas, setAnggotas] = useState<Magang.Anggota[]>([]);
+
+    // setState for Dropdown onChange
     const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Magang.Anggota | null>(null);
     const [selectedAnggota, setSelectedAnggota] = useState<Magang.Anggota>(emptySelected);
+
+    // Dialog Logbook State
+    const [deleteLogbookDialog, setDeleteLogbookDialog] = useState(false);
+    const [logbookDialog, setLogbookDialog] = useState(false);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -53,12 +61,14 @@ const Logbook = () => {
         { label: 'Magang' },
         { label: 'Logbook', command: () => router.push('/logbook') }
     ];
-    // Dropdown
+
+    // Dropdown set customize Value Label
     const dropdownOptions = anggotas.map((data) => ({
         label: data.mahasiswa?.nama,
         value: data.id_mahasiswa
     }));
 
+    // Handle Select Dropdown onChange Event
     const handleDropdownChange = (e: any) => {
         const selected = e.value;
         setDropdownMahasiswa(selected); // Update the selected mahasiswa
@@ -67,10 +77,19 @@ const Logbook = () => {
         });
     };
 
+    // onClick Dialog Logbook
+    const openNew = () => {
+        setLogbookDialog(true);
+    };
+    // For Hide Dialog Logbook when Submitted
+    const hideDialog = () => {
+        setLogbookDialog(false);
+    };
+
     const renderHeader = () => {
         return (
             <div className="flex justify-content-between">
-                <Button label='Logbook' icon="pi pi-pencil" />
+                <Button label='Logbook' icon="pi pi-pencil" onClick={openNew} />
             </div>
         );
     };
@@ -109,6 +128,21 @@ const Logbook = () => {
             loadLogbookMahasiswa();
         }
     }, [selectedAnggota, loadLogbookMahasiswa]);
+
+    const dialogFooter = (
+        <div>
+            <Button label="Batal" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
+            <Button label="Simpan" icon="pi pi-check" size="small" />
+        </div>
+    );
+    const actionBodyTemplate = (rowData: Magang.Logbook) => {
+        return (
+            <React.Fragment>
+                <Button icon="pi pi-print" outlined className="mr-2" size="small" />
+                <Button icon="pi pi-trash" outlined severity="danger" size="small" />
+            </React.Fragment>
+        );
+    };
 
     return (
         <div className="grid">
@@ -154,10 +188,45 @@ const Logbook = () => {
                         <Column field='kegiatan' header='Kegiatan' />
                         <Column field='kesesuaian_matkul_diajarkan' header='Kesesuain Matakuliah' />
                         <Column field='lampiran_laporan' header='File Progres' />
-                        <Column header='Actions' />
+                        <Column header='Actions' alignHeader='center' bodyClassName='text-center' style={{ width: '9rem', minWidth: '9rem' }}
+                            body={actionBodyTemplate} />
                     </DataTable>
-                </div>
-                ) : null }
+
+                    <Dialog modal visible={logbookDialog} onHide={hideDialog} header='Logbook' footer={dialogFooter} className='p-fluid' style={{ width: '450px' }}>
+                        <div className='field grid'>
+                            <label htmlFor="" className='col-12'>Tanggal</label>
+                            <div className='col-12'>
+                                <InputText id='' type='date' placeholder='Tanggal' />
+                            </div>
+                        </div>
+                        <div className='field grid mb-1'>
+                            <div className='col-12 md:col-6 mb-3'>
+                                <label htmlFor="" className='col-12 p-0'>Jam Mulai</label>
+                                <div className='col-12 p-0 mt-2'>
+                                    <InputText id='' type='time' />
+                                </div>
+                            </div>
+                            <div className='col-12 md:col-6 mb-3'>
+                                <label htmlFor="" className='col-12 p-0'>Jam Selesai</label>
+                                <div className='col-12 p-0 mt-2'>
+                                    <InputText id='' type='time' />
+                                </div>
+                            </div>
+                        </div>
+                        <div className='field'>
+                            <label htmlFor="">Kegiatan</label>
+                            <InputText id='' placeholder='Kegiatan KP'/>
+                        </div>
+                        <div className='field'>
+                            <label htmlFor="">Foto</label>
+                            <InputText id='' type='file' placeholder='Kegiatan KP'/>
+                        </div>
+                        <div className='field'>
+                            <label htmlFor="">File Progres</label>
+                            <InputText id='' type='file' placeholder='Kegiatan KP'/>
+                        </div>
+                    </Dialog>
+                </div> ) : null }
             </div>
         </div>
     );
