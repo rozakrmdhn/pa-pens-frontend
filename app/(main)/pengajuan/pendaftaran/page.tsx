@@ -113,7 +113,8 @@ const FormPendaftaran = () => {
     };
 
     const loadMahasiswa = async () => {
-        try {// Endpoint : api/magang/mahasiswa
+        try {
+            // Endpoint : api/magang/mahasiswa
             const data = await MahasiswaService.getMahasiswa();
             setMahasiswas(data);
         } catch (error) {
@@ -151,7 +152,6 @@ const FormPendaftaran = () => {
                                     value={dropdownMahasiswa}
                                     options={dropdownOptions}
                                     optionLabel="label"
-                                    // onChange={(e) => setDropdownMahasiswa(e.value)}
                                     onChange={handleDropdownChange}
                                     placeholder='Ref Mhs' />
                             </div>

@@ -25,6 +25,14 @@ export const LogbookService = {
                 throw error;
             });
     },
+    getLogbookMahasiswa(logbookData: Magang.Logbook) {
+        return axios.post(`${process.env.API_HOST}/logbook/mahasiswa`, logbookData)
+            .then((response) => response.data)
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    },
     deleteLogbook(id: string) {
         return axios.delete(`${process.env.API_HOST}/logbook/${id}`)
             .then((response) => response.data)

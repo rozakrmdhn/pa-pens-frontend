@@ -20,7 +20,7 @@ export const AnggotaService = {
     },
     getAllAnggota() {
         return axios.get(`${process.env.API_HOST}/magang/anggota`)
-            .then((response) => response.data)
+            .then((response) => response.data.data as Magang.Anggota[])
             .catch((error) => {
                 console.error("There was an error fetching the data!", error);
                 throw error;
