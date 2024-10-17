@@ -132,9 +132,11 @@ const Dosen = () => {
         if (dosen.nama?.trim()) {
             try {
                 if (dosen.id) {
+                    // Endpoint : api/dosen
                     const result = await DosenService.updateDosen(dosen.id, dosen);  // Update API call
                     toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
                 } else {
+                    // Endpoint : api/dosen
                     const result = await DosenService.createDosen(dosen);  // Create API call
                     toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
                 }

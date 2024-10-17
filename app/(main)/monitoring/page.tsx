@@ -55,6 +55,9 @@ const Monitoring = () => {
     // Dialog Create Logbook State
     const [logbookDialog, setLogbookDialog] = useState(false);
 
+    // Card Logbook State
+    const [cardLogbookView, setCardLogbookView] = useState(false);
+
     // Breadcrumb State
     const [breadcrumbItemName, setBreadcrumbItemName] = useState('');
 
@@ -120,8 +123,13 @@ const Monitoring = () => {
             // Endpoint : api/logbook/mahasiswa
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
             setLogbooks(getData(result.data));
-            toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
+            setCardLogbookView(true);
+            
+            if (!submitted) {
+                toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
+            }
         } catch (error: any) {
+            setCardLogbookView(false);
             const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
             toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
@@ -178,7 +186,7 @@ const Monitoring = () => {
                         </div>
                     </div>
                 </div>
-                { logbooks.length !== 0 ? (
+                { cardLogbookView ? (
                 <div className='card p-3'>
                     <DataTable
                         ref={dt}

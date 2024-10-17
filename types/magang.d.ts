@@ -37,6 +37,7 @@ declare namespace Magang {
     type Logbook = {
         id?: string | undefined;
         id_anggota?: string;
+        id_mahasiswa?: string;
         tanggal?: Date;
         jam_mulai?: string;
         jam_selesai?: string;

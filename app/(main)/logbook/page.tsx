@@ -20,6 +20,7 @@ const Logbook = () => {
     let emptyLogbook: Magang.Logbook = {
         id: '',
         id_anggota: '',
+        id_mahasiswa: '',
         tanggal: new Date(),
         jam_mulai: '',
         jam_selesai: '',
@@ -57,6 +58,9 @@ const Logbook = () => {
     const [logbookDialog, setLogbookDialog] = useState(false);
     const [deleteLogbookDialog, setDeleteLogbookDialog] = useState(false);
 
+    // Card Logbook State
+    const [cardLogbookView, setCardLogbookView] = useState(false);
+
     // Breadcrumb State
     const [breadcrumbItemName, setBreadcrumbItemName] = useState('');
 
@@ -83,9 +87,10 @@ const Logbook = () => {
     const handleDropdownChange = (e: any) => {
         const selectedId = e.value;
         const selectedData = anggotas.find((data) => data.id_mahasiswa === selectedId);
-        
+
         setDropdownMahasiswa(selectedId); // Update the selected mahasiswa
         setSelectedAnggota({ 
+            id: selectedData?.id,
             id_mahasiswa: selectedId,
         });
         setBreadcrumbItemName(selectedData?.mahasiswa?.nama || '');
@@ -94,10 +99,12 @@ const Logbook = () => {
     // on Click Dialog Logbook
     const openNew = () => {
         setLogbookDialog(true);
+        setSubmitted(false);
     };
     // on Hide Dialog Logbook when Submitted
     const hideDialog = () => {
         setLogbookDialog(false);
+        setSubmitted(false);
     };
     // on Click Delete Logbook Dialog
     const openDeleteLogbookDialog = (rowData: Magang.Logbook) => {
@@ -107,6 +114,18 @@ const Logbook = () => {
     // on Hide Dialog Delete Logbook when Submitted
     const hideDeleteLogbookDialog = () => {
         setDeleteLogbookDialog(false);
+        setSubmitted(false);
+    };
+
+    // Handle Input Change
+    const handleInputChange = (e: any, field: string) => {
+        const value = e.target.value;
+        setLogbook({ 
+            ...logbook, 
+            [field]: value,
+            id_mahasiswa: selectedAnggota.id_mahasiswa,
+            id_anggota:  selectedAnggota.id
+        });
     };
 
     // Fetching Data Mahasiswa ref Anggota
@@ -131,15 +150,47 @@ const Logbook = () => {
             // Endpoint : api/logbook/mahasiswa
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
             setLogbooks(getData(result.data));
-            toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
+            setCardLogbookView(true);
+            
+            if (!submitted) {
+                toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
+            }
         } catch (error: any) {
+            setCardLogbookView(false);
             const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
             toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     }, [selectedAnggota]); // Dependency array for selectedAnggota
 
+    const saveLogbook = async () => {
+        setSubmitted(true);
+        if (logbook.kegiatan?.trim()) {
+            try {
+                // Endpoint : api/logbook
+                const result = await LogbookService.createLogbook(logbook);
+                toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
+                loadLogbookMahasiswa();
+            } catch (error: any) {
+                const errorMessage = error?.response?.data?.message || 'Failed to save data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+            } finally {
+                setLogbookDialog(false)
+            }
+        }
+    };
+
     const deleteLogbook = async () => {
-        console.log(logbook);
+        try {
+            if (logbook.id) {
+                const result = await LogbookService.deleteLogbook(logbook.id);
+                setLogbooks(logbooks.filter(d => d.id !== logbook.id));
+                toast.current?.show({ severity: result.status, summary: 'Success', detail: result.message, life: 3000 });
+            }
+            setDeleteLogbookDialog(false);
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to delete data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+        }
     };
 
     useEffect(() => {
@@ -153,7 +204,7 @@ const Logbook = () => {
     const dialogFooter = (
         <div>
             <Button label="Batal" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
-            <Button label="Simpan" icon="pi pi-check" size="small" />
+            <Button label="Simpan" icon="pi pi-check" size="small" onClick={saveLogbook} />
         </div>
     );
     // -> END
@@ -211,7 +262,7 @@ const Logbook = () => {
                         </div>
                     </div>
                 </div>
-                { logbooks.length !== 0 ? (
+                { cardLogbookView ? (
                 <div className='card p-3'>
                     <DataTable
                         ref={dt}
@@ -239,34 +290,34 @@ const Logbook = () => {
                         <div className='field grid'>
                             <label htmlFor="" className='col-12'>Tanggal</label>
                             <div className='col-12'>
-                                <InputText id='' type='date' value={new Date().toISOString().split('T')[0]} placeholder='Tanggal' />
+                                <InputText id='' type='date' value={new Date().toISOString().split('T')[0]} onChange={(e) => handleInputChange(e, 'tanggal')} placeholder='Tanggal' />
                             </div>
                         </div>
                         <div className='field grid mb-1'>
                             <div className='col-12 md:col-6 mb-3'>
                                 <label htmlFor="" className='col-12 p-0'>Jam Mulai</label>
                                 <div className='col-12 p-0 mt-2'>
-                                    <InputText id='' type='time' />
+                                    <InputText id='' type='time' onChange={(e) => handleInputChange(e, 'jam_mulai')} />
                                 </div>
                             </div>
                             <div className='col-12 md:col-6 mb-3'>
                                 <label htmlFor="" className='col-12 p-0'>Jam Selesai</label>
                                 <div className='col-12 p-0 mt-2'>
-                                    <InputText id='' type='time' />
+                                    <InputText id='' type='time' onChange={(e) => handleInputChange(e, 'jam_selesai')} />
                                 </div>
                             </div>
                         </div>
                         <div className='field'>
                             <label htmlFor="">Kegiatan</label>
-                            <InputTextarea id='' placeholder='Kegiatan KP'/>
+                            <InputTextarea id='' onChange={(e) => handleInputChange(e, 'kegiatan')} placeholder='Kegiatan KP'/>
                         </div>
                         <div className='field'>
                             <label htmlFor="">Foto</label>
-                            <InputText id='' type='file' placeholder='Kegiatan KP'/>
+                            <InputText id='' type='file' />
                         </div>
                         <div className='field'>
                             <label htmlFor="">File Progres</label>
-                            <InputText id='' type='file' placeholder='Kegiatan KP'/>
+                            <InputText id='' type='file' />
                         </div>
                     </Dialog>
 
