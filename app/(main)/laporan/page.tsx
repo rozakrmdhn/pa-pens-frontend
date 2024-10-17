@@ -9,7 +9,7 @@ const Laporan = () => {
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
-        { label: 'Magang KP' },
+        { label: 'Magang' },
         { label: 'Laporan', command: () => router.push('/laporan') }
     ];
 

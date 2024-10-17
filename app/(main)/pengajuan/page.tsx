@@ -24,6 +24,7 @@ const Pengajuan = () => {
     useEffect(() => {
         loadPengajuan();
         loadDosen();
+        initFilters();
         
     }, []);
 
@@ -43,9 +44,11 @@ const Pengajuan = () => {
     const dt = useRef<DataTable<any>>(null);
     const menu = useRef<Menu>(null);
 
+    const [rows, setRows] = useState(10);
     const [loading, setLoading] = useState(true);
     const [submitted, setSubmitted] = useState(false);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
+    const [globalFilterValue, setGlobalFilterValue] = useState('');
 
     const [pengajuans, setPengajuans] = useState<Magang.Daftar[]>([]);
     const [pengajuan, setPengajuan] = useState<Magang.Daftar>(emptyDaftar);
@@ -67,6 +70,21 @@ const Pengajuan = () => {
         { label: 'Magang' },
         { label: 'Pengajuan', command: () => router.push('/pengajuan') }
     ];
+
+    const initFilters = () => {
+        setFilters({
+            global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        });
+        setGlobalFilterValue('');
+    };
+    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        let _filters1 = { ...filters };
+        (_filters1['global'] as any).value = value;
+
+        setFilters(_filters1);
+        setGlobalFilterValue(value);
+    };
 
     const getData = (data: Magang.Daftar[]) => {
         return [...(data || [])].map((d) => {
@@ -107,10 +125,16 @@ const Pengajuan = () => {
 
     const loadPengajuan = async () => {
         // Endpoint : api/magang
-        await MagangService.getPengajuan().then((data) => {
-            setPengajuans(getData(data));
+        try {
+            await MagangService.getPengajuan().then((data) => {
+                setPengajuans(getData(data));
+                setLoading(false);
+            });
+        } catch (error) {
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch data', life: 3000 });
+        } finally {
             setLoading(false);
-        });
+        }
     };
 
     const getDataDosen = (data: Master.Dosen[]) => {
@@ -262,7 +286,7 @@ const Pengajuan = () => {
                 <div>
                     <span className="p-input-icon-left">
                         <i className="pi pi-search" />
-                        <InputText value='' placeholder="Pencarian" style={{ width: '92%' }} />
+                        <InputText value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="Pencarian" style={{ width: '92%' }} />
                     </span>
                 </div>
                 <Button icon="pi pi-plus" rounded onClick={() => router.push('/pengajuan/pendaftaran')} />

@@ -35,8 +35,6 @@ const FormPendaftaran = () => {
 
     const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Master.Mahasiswa | null>(null);
     
-    const [selectedDropdownMhs, setSelectedDropdownMhs] = useState(null)
-    
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
     // Breadcrumb

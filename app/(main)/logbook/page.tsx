@@ -13,8 +13,10 @@ import { Menu } from 'primereact/menu';
 import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
+import { InputTextarea } from 'primereact/inputtextarea';
 
 const Logbook = () => {
+    // Default Property Value State
     let emptyLogbook: Magang.Logbook = {
         id: '',
         id_anggota: '',
@@ -29,10 +31,10 @@ const Logbook = () => {
         lampiran_foto: '',
         catatan_pembimbing: ''
     };
-
     let emptySelected: Magang.Anggota = {
         id_mahasiswa: '',
     };
+    // -> END
 
     const router = useRouter();
     const toast = useRef<Toast>(null);
@@ -51,9 +53,12 @@ const Logbook = () => {
     const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Magang.Anggota | null>(null);
     const [selectedAnggota, setSelectedAnggota] = useState<Magang.Anggota>(emptySelected);
 
-    // Dialog Logbook State
-    const [deleteLogbookDialog, setDeleteLogbookDialog] = useState(false);
+    // Dialog Create Logbook State
     const [logbookDialog, setLogbookDialog] = useState(false);
+    const [deleteLogbookDialog, setDeleteLogbookDialog] = useState(false);
+
+    // Breadcrumb State
+    const [breadcrumbItemName, setBreadcrumbItemName] = useState('');
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -61,6 +66,12 @@ const Logbook = () => {
         { label: 'Magang' },
         { label: 'Logbook', command: () => router.push('/logbook') }
     ];
+    if (breadcrumbItemName) {
+        breadcrumbItems.push({
+            label: breadcrumbItemName
+        });
+    }
+    // -> END
 
     // Dropdown set customize Value Label
     const dropdownOptions = anggotas.map((data) => ({
@@ -70,31 +81,35 @@ const Logbook = () => {
 
     // Handle Select Dropdown onChange Event
     const handleDropdownChange = (e: any) => {
-        const selected = e.value;
-        setDropdownMahasiswa(selected); // Update the selected mahasiswa
+        const selectedId = e.value;
+        const selectedData = anggotas.find((data) => data.id_mahasiswa === selectedId);
+        
+        setDropdownMahasiswa(selectedId); // Update the selected mahasiswa
         setSelectedAnggota({ 
-            id_mahasiswa: selected,
+            id_mahasiswa: selectedId,
         });
+        setBreadcrumbItemName(selectedData?.mahasiswa?.nama || '');
     };
 
-    // onClick Dialog Logbook
+    // on Click Dialog Logbook
     const openNew = () => {
         setLogbookDialog(true);
     };
-    // For Hide Dialog Logbook when Submitted
+    // on Hide Dialog Logbook when Submitted
     const hideDialog = () => {
         setLogbookDialog(false);
     };
-
-    const renderHeader = () => {
-        return (
-            <div className="flex justify-content-between">
-                <Button label='Logbook' icon="pi pi-pencil" onClick={openNew} />
-            </div>
-        );
+    // on Click Delete Logbook Dialog
+    const openDeleteLogbookDialog = (rowData: Magang.Logbook) => {
+        setDeleteLogbookDialog(true);
+        setLogbook({ ...rowData });
     };
-    const header = renderHeader();
+    // on Hide Dialog Delete Logbook when Submitted
+    const hideDeleteLogbookDialog = () => {
+        setDeleteLogbookDialog(false);
+    };
 
+    // Fetching Data Mahasiswa ref Anggota
     const loadAnggota = async () => {
         try {
             // Endpoint : api/magang/anggota
@@ -105,6 +120,7 @@ const Logbook = () => {
         }
     };
 
+    // Mapping Array Value for DataTable
     const getData = (data: Magang.Logbook[]) => {
         return [...(data || [])].map((d) => {
             return d;
@@ -122,6 +138,10 @@ const Logbook = () => {
         }
     }, [selectedAnggota]); // Dependency array for selectedAnggota
 
+    const deleteLogbook = async () => {
+        console.log(logbook);
+    };
+
     useEffect(() => {
         loadAnggota();
         if (selectedAnggota.id_mahasiswa) {
@@ -129,20 +149,42 @@ const Logbook = () => {
         }
     }, [selectedAnggota, loadLogbookMahasiswa]);
 
+    // Action Buttons for Logbook Dialog -> START
     const dialogFooter = (
         <div>
             <Button label="Batal" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
             <Button label="Simpan" icon="pi pi-check" size="small" />
         </div>
     );
+    // -> END
+    const deleteDialogFooter = (
+        <>
+            <Button label="No" icon="pi pi-times" size="small" text onClick={hideDeleteLogbookDialog} />
+            <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteLogbook} />
+        </>
+    );
+
+    // Header Toolbar DataTable -> START
+    const renderHeader = () => {
+        return (
+            <div className="flex justify-content-end">
+                <Button label='Logbook' icon="pi pi-pencil" onClick={openNew} />
+            </div>
+        );
+    };
+    const header = renderHeader();
+    // -> END
+
+    // Action Buttons DataTable -> START
     const actionBodyTemplate = (rowData: Magang.Logbook) => {
         return (
             <React.Fragment>
                 <Button icon="pi pi-print" outlined className="mr-2" size="small" />
-                <Button icon="pi pi-trash" outlined severity="danger" size="small" />
+                <Button icon="pi pi-trash" outlined severity="danger" size="small" onClick={() => openDeleteLogbookDialog(rowData)} />
             </React.Fragment>
         );
     };
+    // -> END
 
     return (
         <div className="grid">
@@ -178,16 +220,17 @@ const Logbook = () => {
                         className="p-datatable-gridlines"
                         showGridlines
                         rows={10}
+                        dataKey='id'
                         filters={filters}
                         responsiveLayout="scroll"
                         emptyMessage="No data found."
                         header={header} >
-                        <Column field='tanggal' header='Tanggal' />
-                        <Column field='jam_mulai' header='Jam Mulai' />
-                        <Column field='jam_selesai' header='Jam Selesai' />
+                        <Column field='tanggal' header='Tanggal' alignHeader='center' bodyClassName='text-center' style={{ width: '7rem', minWidth: '7rem' }} />
+                        <Column field='jam_mulai' header='Jam Mulai' alignHeader='center' bodyClassName='text-center' style={{ width: '7.5rem', minWidth: '7.5rem' }} />
+                        <Column field='jam_selesai' header='Jam Selesai' alignHeader='center' bodyClassName='text-center' style={{ width: '7.5rem', minWidth: '7.5rem' }} />
                         <Column field='kegiatan' header='Kegiatan' />
-                        <Column field='kesesuaian_matkul_diajarkan' header='Kesesuain Matakuliah' />
-                        <Column field='lampiran_laporan' header='File Progres' />
+                        <Column field='kesesuaian_matkul_diajarkan' header='Kesesuain Matkul' alignHeader='center' bodyClassName='text-center' style={{ width: '10rem', minWidth: '10rem' }} />
+                        <Column field='lampiran_laporan' header='File Progres' alignHeader='center' bodyClassName='text-center' style={{ width: '8rem', minWidth: '8rem' }} />
                         <Column header='Actions' alignHeader='center' bodyClassName='text-center' style={{ width: '9rem', minWidth: '9rem' }}
                             body={actionBodyTemplate} />
                     </DataTable>
@@ -196,7 +239,7 @@ const Logbook = () => {
                         <div className='field grid'>
                             <label htmlFor="" className='col-12'>Tanggal</label>
                             <div className='col-12'>
-                                <InputText id='' type='date' placeholder='Tanggal' />
+                                <InputText id='' type='date' value={new Date().toISOString().split('T')[0]} placeholder='Tanggal' />
                             </div>
                         </div>
                         <div className='field grid mb-1'>
@@ -215,7 +258,7 @@ const Logbook = () => {
                         </div>
                         <div className='field'>
                             <label htmlFor="">Kegiatan</label>
-                            <InputText id='' placeholder='Kegiatan KP'/>
+                            <InputTextarea id='' placeholder='Kegiatan KP'/>
                         </div>
                         <div className='field'>
                             <label htmlFor="">Foto</label>
@@ -224,6 +267,15 @@ const Logbook = () => {
                         <div className='field'>
                             <label htmlFor="">File Progres</label>
                             <InputText id='' type='file' placeholder='Kegiatan KP'/>
+                        </div>
+                    </Dialog>
+
+                    <Dialog visible={deleteLogbookDialog} style={{ width: '350px' }} header='Confirm' footer={deleteDialogFooter} modal onHide={hideDeleteLogbookDialog}>
+                        <div className='flex align-items-center justify-content-center'>
+                            <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
+                            { logbook && (
+                                <span>Are you sure you want to delete <b>Logbook</b> ?</span>
+                            )}
                         </div>
                     </Dialog>
                 </div> ) : null }
