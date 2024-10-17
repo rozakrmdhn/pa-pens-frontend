@@ -147,6 +147,7 @@ const Logbook = () => {
         });
     };
     const loadLogbookMahasiswa = useCallback(async () => {
+        setSubmitted(false);
         try {
             // Endpoint : api/logbook/mahasiswa
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
@@ -184,6 +185,7 @@ const Logbook = () => {
     };
 
     const deleteLogbook = async () => {
+        setSubmitted(true);
         try {
             if (logbook.id) {
                 const result = await LogbookService.deleteLogbook(logbook.id);
