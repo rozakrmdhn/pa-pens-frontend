@@ -38,6 +38,7 @@ const Monitoring = () => {
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const [rows, setRows] = useState(10);
     const menu = useRef<Menu>(null);
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -124,7 +125,8 @@ const Monitoring = () => {
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
             setLogbooks(getData(result.data));
             setCardLogbookView(true);
-            
+            setLoading(false);
+
             if (!submitted) {
                 toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
             }
@@ -132,6 +134,8 @@ const Monitoring = () => {
             setCardLogbookView(false);
             const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
             toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+        } finally {
+            setLoading(false);
         }
     }, [selectedAnggota]); // Dependency array for selectedAnggota
 
@@ -141,6 +145,10 @@ const Monitoring = () => {
             loadLogbookMahasiswa();
         }
     }, [selectedAnggota, loadLogbookMahasiswa]);
+
+    const reloadTable = () => {
+        loadLogbookMahasiswa();
+    };
 
     // Action Buttons for Logbook Dialog -> START
     const dialogFooter = (
@@ -197,8 +205,30 @@ const Monitoring = () => {
                         rows={10}
                         dataKey='id'
                         filters={filters}
+                        loading={loading}
                         responsiveLayout="scroll"
-                        emptyMessage="No data found." >
+                        emptyMessage="No data found."
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                        paginatorLeft={
+                            <div className="p-d-flex p-ai-center">
+                                <Button 
+                                    type="button" 
+                                    icon="pi pi-refresh" 
+                                    className="p-button-text p-ml-2" 
+                                    onClick={reloadTable} 
+                                    disabled={loading}
+                                />
+                            </div>
+                        }
+                        paginatorRight={
+                            <div className="p-d-flex p-ai-center">
+                                <Dropdown
+                                    value={rows}
+                                    options={[5, 10, 25]}
+                                    onChange={(e) => setRows(e.value)}
+                                />
+                            </div>
+                        } >
                         <Column field='tanggal' header='Tanggal' alignHeader='center' bodyClassName='text-center' style={{ width: '7rem', minWidth: '7rem' }} />
                         <Column field='kegiatan' header='Kegiatan' />
                         <Column field='catatan_pembimbing' header='Catatan Pembimbing' />

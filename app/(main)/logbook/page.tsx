@@ -40,6 +40,7 @@ const Logbook = () => {
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const [rows, setRows] = useState(10);
     const menu = useRef<Menu>(null);
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -151,7 +152,8 @@ const Logbook = () => {
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
             setLogbooks(getData(result.data));
             setCardLogbookView(true);
-            
+            setLoading(false);
+
             if (!submitted) {
                 toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
             }
@@ -159,6 +161,8 @@ const Logbook = () => {
             setCardLogbookView(false);
             const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
             toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+        } finally {
+            setLoading(false);
         }
     }, [selectedAnggota]); // Dependency array for selectedAnggota
 
@@ -200,6 +204,10 @@ const Logbook = () => {
         }
     }, [selectedAnggota, loadLogbookMahasiswa]);
 
+    const reloadTable = () => {
+        loadLogbookMahasiswa();
+    };
+
     // Action Buttons for Logbook Dialog -> START
     const dialogFooter = (
         <div>
@@ -218,7 +226,12 @@ const Logbook = () => {
     // Header Toolbar DataTable -> START
     const renderHeader = () => {
         return (
-            <div className="flex justify-content-end">
+            <div className="flex justify-content-between">
+                <Dropdown
+                    value={rows}
+                    options={[5, 10, 25]}
+                    onChange={(e) => setRows(e.value)}
+                    style={{ width: '6rem', minWidth: '6rem' }} />
                 <Button label='Logbook' icon="pi pi-pencil" onClick={openNew} />
             </div>
         );
@@ -273,9 +286,32 @@ const Logbook = () => {
                         rows={10}
                         dataKey='id'
                         filters={filters}
+                        loading={loading}
                         responsiveLayout="scroll"
                         emptyMessage="No data found."
-                        header={header} >
+                        header={header}
+                        paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink"
+                        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} records"
+                        paginatorLeft={
+                            <div className="p-d-flex p-ai-center">
+                                <Button 
+                                    type="button" 
+                                    icon="pi pi-refresh" 
+                                    className="p-button-text p-ml-2" 
+                                    onClick={reloadTable} 
+                                    disabled={loading}
+                                />
+                            </div>
+                        }
+                        paginatorRight={
+                            <div className="p-d-flex p-ai-center">
+                                <Dropdown
+                                    value={rows}
+                                    options={[5, 10, 25]}
+                                    onChange={(e) => setRows(e.value)}
+                                />
+                            </div>
+                        } >
                         <Column field='tanggal' header='Tanggal' alignHeader='center' bodyClassName='text-center' style={{ width: '7rem', minWidth: '7rem' }} />
                         <Column field='jam_mulai' header='Jam Mulai' alignHeader='center' bodyClassName='text-center' style={{ width: '7.5rem', minWidth: '7.5rem' }} />
                         <Column field='jam_selesai' header='Jam Selesai' alignHeader='center' bodyClassName='text-center' style={{ width: '7.5rem', minWidth: '7.5rem' }} />
