@@ -147,17 +147,12 @@ const Logbook = () => {
         });
     };
     const loadLogbookMahasiswa = useCallback(async () => {
-        setSubmitted(false);
         try {
             // Endpoint : api/logbook/mahasiswa
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
             setLogbooks(getData(result.data));
             setCardLogbookView(true);
             setLoading(false);
-
-            if (!submitted) {
-                toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
-            }
         } catch (error: any) {
             setCardLogbookView(false);
             const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
@@ -168,7 +163,6 @@ const Logbook = () => {
     }, [selectedAnggota]); // Dependency array for selectedAnggota
 
     const saveLogbook = async () => {
-        setSubmitted(true);
         if (logbook.kegiatan?.trim()) {
             try {
                 // Endpoint : api/logbook
@@ -184,8 +178,7 @@ const Logbook = () => {
         }
     };
 
-    const deleteLogbook = async () => {
-        setSubmitted(true);
+    const deleteLogbook = async () => {        
         try {
             if (logbook.id) {
                 const result = await LogbookService.deleteLogbook(logbook.id);
