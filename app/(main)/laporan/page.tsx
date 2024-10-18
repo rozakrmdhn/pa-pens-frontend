@@ -27,7 +27,14 @@ const Laporan = () => {
                     <h5>Laporan</h5>
                 </div>
                 <div className="card p-3">
-                    Blank Page
+                    <h5>Rencana Konten Laporan</h5>
+                    <ol>
+                        <li>Menampilkan progres mahasiswa pjj dalam melaksanakan Kerja Praktek</li>
+                        <li>Menampilkan alokasi dosen menjadi dosen pembimbing dari mahasiswa pjj</li>
+                        <li>Menampilkan pendaftaran Kerja Praktek yang disetujui dan ditolak</li>
+                        <li>Menampilkan jumlah mahasiswa pjj yang melaksanakan Kerja Praktek berdasarkan Kabupaten</li>
+                        <li>dsb.</li>
+                    </ol>
                 </div>
             </div>
         </div>

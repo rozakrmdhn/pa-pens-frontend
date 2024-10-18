@@ -14,6 +14,8 @@ import { InputText } from 'primereact/inputtext';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { RadioButton } from 'primereact/radiobutton';
+import { Badge } from 'primereact/badge';
 
 const Logbook = () => {
     // Default Property Value State
@@ -77,6 +79,12 @@ const Logbook = () => {
         });
     }
     // -> END
+
+    // Dropdown Matakuliah -> static data
+    const dropdownMatakuliah = [
+        { label: 'Praktikum Basis Data', value: 'TI032105' },
+        { label: 'Workshop Administrasi Basis Data', value: 'TI034104'}
+    ];
 
     // Dropdown set customize Value Label
     const dropdownOptions = anggotas.map((data) => ({
@@ -203,6 +211,17 @@ const Logbook = () => {
         loadLogbookMahasiswa();
     };
 
+    const statusBodyTemplate = (rowData: Magang.Logbook) => {
+        const statusText = rowData.kesesuaian_matkul_diajarkan === 1 ? 'Ya' : 'Tidak';
+        const statusSeverity = rowData.kesesuaian_matkul_diajarkan === 1 ? 'success' : 'warning';
+
+        return <Badge value={statusText} severity={statusSeverity} />;
+    };
+
+    const lampiranBodyTemplate = (rowData: Magang.Logbook) => {
+        return <Button label='Lihat' size='small' className='p-button-text' />
+    };
+
     // Action Buttons for Logbook Dialog -> START
     const dialogFooter = (
         <div>
@@ -226,7 +245,7 @@ const Logbook = () => {
                     value={rows}
                     options={[5, 10, 25]}
                     onChange={(e) => setRows(e.value)}
-                    style={{ width: '6rem', minWidth: '6rem' }} />
+                    style={{ width: '5.5rem', minWidth: '5.5rem' }} />
                 <Button label='Logbook' icon="pi pi-pencil" onClick={openNew} />
             </div>
         );
@@ -304,6 +323,7 @@ const Logbook = () => {
                                     value={rows}
                                     options={[5, 10, 25]}
                                     onChange={(e) => setRows(e.value)}
+                                    style={{ width: '5rem', minWidth: '5rem' }}
                                 />
                             </div>
                         } >
@@ -311,13 +331,21 @@ const Logbook = () => {
                         <Column field='jam_mulai' header='Jam Mulai' alignHeader='center' bodyClassName='text-center' style={{ width: '7.5rem', minWidth: '7.5rem' }} />
                         <Column field='jam_selesai' header='Jam Selesai' alignHeader='center' bodyClassName='text-center' style={{ width: '7.5rem', minWidth: '7.5rem' }} />
                         <Column field='kegiatan' header='Kegiatan' />
-                        <Column field='kesesuaian_matkul_diajarkan' header='Kesesuain Matkul' alignHeader='center' bodyClassName='text-center' style={{ width: '10rem', minWidth: '10rem' }} />
-                        <Column field='lampiran_laporan' header='File Progres' alignHeader='center' bodyClassName='text-center' style={{ width: '8rem', minWidth: '8rem' }} />
+                        <Column field='kesesuaian_matkul_diajarkan' header='Kesesuaian Matkul' 
+                            alignHeader='center' 
+                            bodyClassName='text-center'
+                            body={statusBodyTemplate} 
+                            style={{ width: '11rem', minWidth: '11rem' }} />
+                        <Column field='lampiran_laporan' header='File Progres' 
+                            alignHeader='center' 
+                            bodyClassName='text-center'
+                            body={lampiranBodyTemplate}
+                            style={{ width: '8rem', minWidth: '8rem' }} />
                         <Column header='Actions' alignHeader='center' bodyClassName='text-center' style={{ width: '9rem', minWidth: '9rem' }}
                             body={actionBodyTemplate} />
                     </DataTable>
 
-                    <Dialog modal visible={logbookDialog} onHide={hideDialog} header='Logbook' footer={dialogFooter} className='p-fluid' style={{ width: '450px' }}>
+                    <Dialog modal visible={logbookDialog} onHide={hideDialog} header='Logbook' footer={dialogFooter} className='p-fluid' style={{ width: '650px' }}>
                         <div className='field grid'>
                             <label htmlFor="" className='col-12'>Tanggal</label>
                             <div className='col-12'>
@@ -341,6 +369,35 @@ const Logbook = () => {
                         <div className='field'>
                             <label htmlFor="">Kegiatan</label>
                             <InputTextarea id='' onChange={(e) => handleInputChange(e, 'kegiatan')} placeholder='Kegiatan KP'/>
+                        </div>
+                        <div className='field'>
+                            <label htmlFor="">Kesesuaian Matakuliah</label>
+                            <div className='flex justify-content-start p-2'>
+                                <div className='field-radiobutton mb-0 mr-4'>
+                                    <RadioButton 
+                                        name='option' 
+                                        value={1} 
+                                        onChange={(e) => handleInputChange(e, 'kesesuaian_matkul_diajarkan')} 
+                                        checked={logbook?.kesesuaian_matkul_diajarkan === 1 || false} />
+                                    <label htmlFor="">Ya</label>
+                                </div>
+                                <div className='field-radiobutton mb-0'>
+                                    <RadioButton 
+                                        name='option' 
+                                        value={2} 
+                                        onChange={(e) => handleInputChange(e, 'kesesuaian_matkul_diajarkan')} 
+                                        checked={logbook?.kesesuaian_matkul_diajarkan === 2 || false} />
+                                    <label htmlFor="">Tidak</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div className='field'>
+                            <label htmlFor="">Jika Ya, Pilih Matakuliah</label>
+                            <Dropdown
+                                value={logbook?.matkul_diajarkan}
+                                options={dropdownMatakuliah}
+                                placeholder='Pilih Matakuliah'
+                                onChange={(e) => handleInputChange(e, 'matkul_diajarkan')} />
                         </div>
                         <div className='field'>
                             <label htmlFor="">Foto</label>

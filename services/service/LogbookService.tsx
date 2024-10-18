@@ -41,4 +41,12 @@ export const LogbookService = {
                 throw error;
             });
     },
+    createLogbookMonitoring(id: string, logbookData: Magang.Logbook) {
+        return axios.put(`${process.env.API_HOST}/logbook/monitoring/${id}`, logbookData)
+            .then((response) => response.data)
+            .catch((error) => {
+                console.error("There was an error updating the data!", error);
+                throw error;
+            });
+    },
 };

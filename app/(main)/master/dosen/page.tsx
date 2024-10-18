@@ -132,7 +132,7 @@ const Dosen = () => {
         if (dosen.nama?.trim()) {
             try {
                 if (dosen.id) {
-                    // Endpoint : api/dosen
+                    // Endpoint : api/dosen/{id}
                     const result = await DosenService.updateDosen(dosen.id, dosen);  // Update API call
                     toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
                 } else {
@@ -256,8 +256,7 @@ const Dosen = () => {
                                 onChange={(e) => setRows(e.value)}
                             />
                         </div>
-                    }
-                >
+                    } >
                         <Column 
                             field="nama" 
                             header="Nama" 

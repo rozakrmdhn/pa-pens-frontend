@@ -81,6 +81,11 @@ const Monitoring = () => {
         value: data.id_mahasiswa
     }));
 
+    const handleInputChange = (e: any, field: string) => {
+        const value = e.target.value;
+        setLogbook({ ...logbook, [field]: value });
+    };
+
     // Handle Select Dropdown onChange Event
     const handleDropdownChange = (e: any) => {
         const selectedId = e.value;
@@ -94,7 +99,8 @@ const Monitoring = () => {
     };
 
     // on Click Dialog Logbook
-    const openNew = (rowData: Magang.Logbook) => {
+    const openNew = (data: Magang.Logbook) => {
+        setLogbook({ ...data })
         setLogbookDialog(true);
     };
     // on Hide Dialog Logbook when Submitted
@@ -139,6 +145,26 @@ const Monitoring = () => {
         }
     }, [selectedAnggota]); // Dependency array for selectedAnggota
 
+    // Create or Update Monitoring 
+    const saveMonitoring = async () => {
+        setSubmitted(true);
+        if (logbook.catatan_pembimbing?.trim()) {
+            try {
+                if (logbook.id) {
+                    // Endpoint : api/logbook/monitoring/{id}
+                    const result = await LogbookService.createLogbookMonitoring(logbook.id, logbook);
+                    toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
+                }
+                loadLogbookMahasiswa();
+            } catch (error: any) {
+                const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+            } finally {
+                setLogbookDialog(false);
+            }
+        }
+    };
+
     useEffect(() => {
         loadAnggota();
         if (selectedAnggota.id_mahasiswa) {
@@ -154,7 +180,7 @@ const Monitoring = () => {
     const dialogFooter = (
         <div>
             <Button label="Batal" icon="pi pi-times" size="small" onClick={hideDialog} className="p-button-text" />
-            <Button label="Simpan" icon="pi pi-check" size="small" />
+            <Button label="Simpan" icon="pi pi-check" size="small" onClick={saveMonitoring} />
         </div>
     );
     // -> END
@@ -226,13 +252,16 @@ const Monitoring = () => {
                                     value={rows}
                                     options={[5, 10, 25]}
                                     onChange={(e) => setRows(e.value)}
+                                    style={{ width: '5rem', minWidth: '5rem' }}
                                 />
                             </div>
                         } >
                         <Column field='tanggal' header='Tanggal' alignHeader='center' bodyClassName='text-center' style={{ width: '7rem', minWidth: '7rem' }} />
-                        <Column field='kegiatan' header='Kegiatan' />
-                        <Column field='catatan_pembimbing' header='Catatan Pembimbing' />
-                        <Column field='lampiran_laporan' header='File Progres' alignHeader='center' bodyClassName='text-center' style={{ width: '8rem', minWidth: '8rem' }} />
+                        <Column field='kegiatan' header='Kegiatan' style={{ width: '50%', minWidth: '50%' }} />
+                        <Column field='catatan_pembimbing' header='Catatan Pembimbing' style={{ width: '50%', minWidth: '50%' }} />
+                        <Column field='lampiran_laporan' header='File Progres' alignHeader='center' 
+                            bodyClassName='text-center' 
+                            style={{ width: '8rem', minWidth: '8rem' }} />
                         <Column header='Actions' alignHeader='center' bodyClassName='text-center' style={{ width: '10rem', minWidth: '10rem' }}
                             body={actionBodyTemplate} />
                     </DataTable>
@@ -240,7 +269,11 @@ const Monitoring = () => {
                     <Dialog modal visible={logbookDialog} onHide={hideDialog} header='Monitoring' footer={dialogFooter} className='p-fluid' style={{ width: '450px' }}>
                         <div className='field'>
                             <label htmlFor="">Catatan Logbook</label>
-                            <InputTextarea id='' placeholder='Catatan Logbook'/>
+                            <InputTextarea 
+                                value={logbook.catatan_pembimbing || ''} 
+                                id='catatan_pembimbing' 
+                                placeholder='Catatan Logbook'
+                                onChange={(e) => handleInputChange(e, 'catatan_pembimbing')} />
                         </div>
                     </Dialog>
                 </div> ) : null }
