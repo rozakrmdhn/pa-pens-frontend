@@ -21,7 +21,7 @@ const AppMenu = () => {
                 { label: 'Pengajuan', icon: 'pi pi-fw pi-envelope', to: '/pengajuan'},
                 { label: 'Monitoring', icon: 'pi pi-fw pi-desktop', to: '/monitoring'},
                 { label: 'Logbook', icon: 'pi pi-fw pi-file-edit', to: '/logbook'},
-                { label: 'Ploting Dosbing', icon: 'pi pi-fw pi-users', to: '' },
+                { label: 'Ploting Dosbing', icon: 'pi pi-fw pi-users', to: '/ploting' },
                 { label: 'Laporan', icon: 'pi pi-fw pi-chart-bar', to: '/laporan'},
             ]
         },

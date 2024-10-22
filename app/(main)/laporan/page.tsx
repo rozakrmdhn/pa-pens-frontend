@@ -23,7 +23,7 @@ const Laporan = () => {
                 <BreadCrumb home={breadcrumbHome} model={breadcrumbItems} />
             </div>
             <div className="col-12">
-            <div className="flex justify-content-between my-1">
+                <div className="flex justify-content-between my-1">
                     <h5>Laporan</h5>
                 </div>
                 <div className="card p-3">

@@ -4,14 +4,14 @@ import { BreadCrumb } from "primereact/breadcrumb";
 import { useRouter } from 'next/navigation';
 import { Button } from 'primereact/button';
 
-const Example = () => {
+const Ploting = () => {
     const router = useRouter();
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
-        { label: 'Home' },
-        { label: 'Example' }
+        { label: 'Magang' },
+        { label: 'Ploting Dosen' }
     ];
 
     useEffect(() => {
@@ -25,14 +25,14 @@ const Example = () => {
             </div>
             <div className="col-12">
                 <div className='flex justify-content-between my-1'>
-                    <h5>Title</h5>
+                    <h5>Ploting Dosen</h5>
                 </div>
                 <div className="card p-3">
-                    Body
+                    ENDPOINT /api/dosen/ploting
                 </div>
             </div>
         </div>
     );
 };
 
-export default Example;
+export default Ploting;
