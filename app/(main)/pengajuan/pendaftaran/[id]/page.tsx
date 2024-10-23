@@ -16,6 +16,7 @@ import { Demo, Master, Magang } from '@/types';
 import { MahasiswaService } from '@/services/service/MahasiswaService';
 import { AnggotaService } from '@/services/service/AnggotaService';
 import { MagangService } from '@/services/service/MagangService';
+import { WilayahService } from '@/services/service/WilayahService';
 
 const FormPendaftaran = () => {
     let emptyDaftar: Magang.Daftar = {
@@ -23,10 +24,18 @@ const FormPendaftaran = () => {
         lama_kp: '',
         tempat_kp: '',
         alamat: '',
+        provinsi: '',
         kota: '',
         id_mahasiswa: '',
         bulan: 0,
         tahun: 0
+    };
+    let emptySelectedProvince: Master.Provinces = {
+        name: '',
+    };
+    let emptySelectedRegency: Master.Regencies = {
+        province_id: '',
+        name: '',
     };
 
     const router = useRouter();
@@ -41,19 +50,18 @@ const FormPendaftaran = () => {
     const [anggotas, setAnggotas] = useState<Magang.Anggota[]>();
     const [anggota, setAnggota] = useState<Magang.Anggota>();
 
+    const [provinces, setProvinces] = useState<Master.Provinces[]>([]);
+    const [regencies, setRegencies] = useState<Master.Regencies[]>([]);
+
     const [selectedMahasiswas, setSelectedMahasiswas] = useState<Master.Mahasiswa[]>([]);
+
+    const [selectedProvince, setSelectedProvince] = useState<Master.Provinces>(emptySelectedProvince);
+    const [selectedRegency, setSelectedRegency] = useState<Master.Regencies>(emptySelectedRegency);
 
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
     // Dialog Delete Anggota
     const [deleteMahasiswaDialog, setDeleteMahasiswaDialog] = useState(false);
-
-    const handleInputChange = (e: any, field: string) => {
-        const value = e.target.value;
-        setDaftar({ ...daftar, [field]: value });
-    };
-
-    console.log(isPengajuanLoaded);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
@@ -103,11 +111,46 @@ const FormPendaftaran = () => {
         );
     };
 
+    const dropdownProvinces = provinces.map((data) => ({
+        label: data.name,
+        value: data.name,
+        id: data.id
+    }));
+    const dropdownRegencies = regencies.map((data) => ({
+        label: data.name,
+        value: data.name,
+        id: data.id,
+    }));
+
+    const handleInputChange = (e: any, field: string) => {
+        const value = e.target.value;
+        setDaftar({ 
+            ...daftar, 
+            [field]: value
+        });
+    };
+    const handleDropdownProvinceChange = async (e: any) => {
+        const selected = e.value; // Get the selected province name
+        const selectedProvince = provinces.find(p => p.name === selected);
+
+        setDaftar({ ...daftar, provinsi: selected, kota: '' }); // Reset regency
+
+        setSelectedProvince({
+            ...selectedProvince, id: selectedProvince?.id
+        });
+    };
+    const handleDropdownRegencyChange = (e: any) => {
+        const selected = e.value;
+
+        setDaftar({ ...daftar, kota: selected });
+    }
+
     // Proses Simpan Pendaftaran
     const savePendaftaran = async () => {
         try {
             if (daftar.id) {
                 // Endpoint : api/magang/pengajuan/{id}
+                console.log(daftar);
                 const result = await MagangService.updatePengajuan(daftar.id, daftar);
                 toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             } else {
@@ -179,6 +222,24 @@ const FormPendaftaran = () => {
             console.log('Failed to load data', error);
         }
     };
+    const loadProvinces = async () => {
+        try {
+            // Endpoint : api/wilayah/provinces
+            const result = await WilayahService.getProvinces();
+            setProvinces(result);
+        } catch (error) {
+            console.log('Failed to load data', error);
+        }
+    };
+    const loadRegencies = useCallback(async () => {
+        try {
+            // Endpoint : api/wilayah/regencies
+            const result = await WilayahService.getRegencies(selectedProvince)
+            setRegencies(result);
+        } catch (error) {
+            console.log('Failed to load data', error);
+        }
+    }, [selectedProvince]);
 
     // Action Button
     const actionBodyTemplate = (rowData: Magang.Anggota) => {
@@ -224,6 +285,7 @@ const FormPendaftaran = () => {
     );
 
     useEffect(() => {
+        loadProvinces();
         if (id && !isPengajuanLoaded.current) {
             // If an ID exists in the URL, load the pengajuan for editing
             loadMahasiswa();
@@ -231,7 +293,11 @@ const FormPendaftaran = () => {
             loadAnggota(id);
             isPengajuanLoaded.current = true;
         }
-    }, [id]);
+        
+        if (selectedProvince.id) {
+            loadRegencies();
+        }
+    }, [id, selectedProvince, loadRegencies]);
 
     return (
         <div className="grid">
@@ -282,8 +348,30 @@ const FormPendaftaran = () => {
                         </div>
                         <div className="field grid">
                             <label htmlFor="kota" className="col-12 mb-2 md:col-2 md:mb-0">Kota</label>
-                            <div className="col-12 md:col-6">
-                                <InputText id='kota' value={daftar?.kota} type='text' onChange={(e) => handleInputChange(e, 'kota')} />
+                            <div className="col-12 md:col-3">
+                                <Dropdown
+                                    id='provinsi'
+                                    value={daftar?.provinsi} 
+                                    options={dropdownProvinces}
+                                    optionLabel='label'
+                                    onChange={handleDropdownProvinceChange}
+                                    placeholder='Pilih Provinsi'
+                                    filter />
+                            </div>
+                            <div className="col-12 md:col-3">
+                                { selectedProvince.name !== '' ? (
+                                    <Dropdown
+                                    id='kota' 
+                                    value={daftar?.kota} 
+                                    options={dropdownRegencies}
+                                    optionLabel='label'
+                                    onChange={handleDropdownRegencyChange}
+                                    placeholder='Pilih Kabupaten'
+                                    disabled={!daftar.provinsi}
+                                    filter />
+                                ) : (
+                                    <InputText value={daftar.kota} readOnly />
+                                )}
                             </div>
                         </div>
                         <div className="field grid">

@@ -7,7 +7,8 @@ declare namespace Magang {
         lama_kp?: string;
         tempat_kp?: string;
         alamat?: string;
-        kota?: string;
+        provinsi?: string | undefined;
+        kota?: string | undefined;
         bulan?: number;
         tahun?: number;
         status_persetujuan?: number;

@@ -13,6 +13,7 @@ import { Demo, Master, Magang } from '@/types';
 import { MahasiswaService } from '@/services/service/MahasiswaService';
 import { AnggotaService } from '@/services/service/AnggotaService';
 import { MagangService } from '@/services/service/MagangService';
+import { WilayahService } from '@/services/service/WilayahService';
 
 const FormPendaftaran = () => {
     let emptyDaftar: Magang.Daftar = {
@@ -20,10 +21,18 @@ const FormPendaftaran = () => {
         lama_kp: '',
         tempat_kp: '',
         alamat: '',
+        provinsi: '',
         kota: '',
         id_mahasiswa: '',
         bulan: 0,
         tahun: 0
+    };
+    let emptySelectedProvince: Master.Provinces = {
+        name: '',
+    };
+    let emptySelectedRegency: Master.Regencies = {
+        province_id: '',
+        name: '',
     };
 
     const router = useRouter();
@@ -32,9 +41,14 @@ const FormPendaftaran = () => {
     const [isEditMode, setIsEditMode] = useState(false);
 
     const [mahasiswas, setMahasiswas] = useState<Master.Mahasiswa[]>([]);
+    const [provinces, setProvinces] = useState<Master.Provinces[]>([]);
+    const [regencies, setRegencies] = useState<Master.Regencies[]>([]);
 
     const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Master.Mahasiswa | null>(null);
     
+    const [selectedProvince, setSelectedProvince] = useState<Master.Provinces>(emptySelectedProvince);
+    const [selectedRegency, setSelectedRegency] = useState<Master.Regencies>(emptySelectedRegency);
+
     const [dropdownSelectedTA, setDropdownSelectedTA] = useState(null);
 
     // Breadcrumb
@@ -89,6 +103,8 @@ const FormPendaftaran = () => {
             ...daftar, 
             [field]: value,
             id_mahasiswa: dropdownMahasiswa ? dropdownMahasiswa.toString() : undefined,
+            provinsi: selectedProvince.name,
+            kota: selectedRegency.name
         });
     };
 
@@ -96,9 +112,18 @@ const FormPendaftaran = () => {
         const selectedMahasiswa = e.value;
         setDropdownMahasiswa(selectedMahasiswa); // Update the selected mahasiswa
     };
+    const handleDropdownProvinceChange = (e: any) => {
+        const selected = e.value;
+        setSelectedProvince(selected);
+    };
+    const handleDropdownRegencyChange = (e: any) => {
+        const selected = e.value;
+        setSelectedRegency(selected);
+    }
 
     const savePendaftaran = async () => {
         try {
+            console.log(daftar);
             // Endpoint : api/magang/pengajuan
             const result = await MagangService.createPengajuan(daftar);
             toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
@@ -117,10 +142,32 @@ const FormPendaftaran = () => {
             console.log('Failed to load data', error);
         }
     };
+    const loadProvinces = async () => {
+        try {
+            // Endpoint : api/wilayah/provinces
+            const result = await WilayahService.getProvinces();
+            setProvinces(result);
+        } catch (error) {
+            console.log('Failed to load data', error);
+        }
+    };
+    const loadRegencies = useCallback(async () => {
+        try {
+            // Endpoint : api/wilayah/regencies
+            const result = await WilayahService.getRegencies(selectedProvince)
+            setRegencies(result);
+        } catch (error) {
+            
+        }
+    }, [selectedProvince]);
 
     useEffect(() => {
         loadMahasiswa();
-    }, []);
+        loadProvinces();
+        if (selectedProvince.id) {
+            loadRegencies();
+        }
+    }, [selectedProvince, loadRegencies]);
 
     return (
         <div className="grid">
@@ -183,8 +230,25 @@ const FormPendaftaran = () => {
                         </div>
                         <div className="field grid">
                             <label htmlFor="kota" className="col-12 mb-2 md:col-2 md:mb-0">Kota</label>
-                            <div className="col-12 md:col-6">
-                                <InputText id='kota' value={daftar?.kota} type='text' onChange={(e) => handleInputChange(e, 'kota')} />
+                            <div className="col-12 md:col-3">
+                                <Dropdown
+                                    id='provinsi' 
+                                    value={selectedProvince} 
+                                    options={provinces}
+                                    optionLabel='name'
+                                    onChange={handleDropdownProvinceChange}
+                                    placeholder='Pilih Provinsi'
+                                    filter />
+                            </div>
+                            <div className="col-12 md:col-3">
+                                <Dropdown
+                                    id='kota' 
+                                    value={selectedRegency} 
+                                    options={regencies}
+                                    optionLabel='name'
+                                    onChange={handleDropdownRegencyChange}
+                                    placeholder='Pilih Kabupaten'
+                                    filter />
                             </div>
                         </div>
                         <div className="field grid">

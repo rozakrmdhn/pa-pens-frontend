@@ -21,4 +21,15 @@ declare namespace Master {
         alamat?: string;
         jurusan?: string;
     };
+
+    // WilayahService
+    type Provinces = {
+        id?: string | undefined;
+        name?: string;
+    };
+    type Regencies = {
+        id?: string | undefined;
+        province_id?: string | undefined;
+        name?: string;
+    };
 }
