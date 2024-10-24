@@ -28,7 +28,8 @@ const FormPendaftaran = () => {
         kota: '',
         id_mahasiswa: '',
         bulan: 0,
-        tahun: 0
+        tahun: 0,
+        catatan_koordinator_kp: ''
     };
     let emptySelectedProvince: Master.Provinces = {
         name: '',
@@ -419,7 +420,9 @@ const FormPendaftaran = () => {
                         <div className="field grid">
                             <label htmlFor="catatan_koordkp" className="col-12 mb-2 md:col-2 md:mb-0">Catatan Koordinator KP</label>
                             <div className="col-12 md:col-10">
-                                - 
+                                {daftar.status_persetujuan === 0 ? (
+                                    <Badge severity='danger' value={daftar.catatan_koordinator_kp} />
+                                ) : ( '-' ) }
                             </div>
                         </div>
                     </div>

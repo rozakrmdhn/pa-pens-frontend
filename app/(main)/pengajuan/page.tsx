@@ -106,6 +106,7 @@ const Pengajuan = () => {
     const openVerifikasi = (pengajuan: Magang.Daftar) => {
         setPengajuan({ ...pengajuan});
         setVerifikasiDialog(true);
+        console.log(pengajuan);
     };
     // Hide Verifikasi Dialog
     const hideDialog = () => {
@@ -174,7 +175,19 @@ const Pengajuan = () => {
     };
     const handleInputChange = (e: any, field: string) => {
         const value = e.target.value;
-        setPengajuan({ ...pengajuan, [field]: value});
+        // Jika field adalah 'status_persetujuan' dan nilainya adalah 1, set catatan_koordinator_kp ke null
+        if (field === 'status_persetujuan' && value == 1) {
+            setPengajuan({
+                ...pengajuan,
+                [field]: value,
+                catatan_koordinator_kp: '' // Reset catatan jika disetujui
+            });
+        } else {
+            setPengajuan({ 
+                ...pengajuan, 
+                [field]: value
+            });
+        }
     };
 
     // Default Value Option
@@ -219,6 +232,7 @@ const Pengajuan = () => {
             }
             // Proceed with the API call
             // Endpoint : api/magang/pengajuan/{id}/verifikasi
+            console.log(pengajuan);
             const result = await MagangService.verifikasiPengajuan(pengajuan.id, pengajuan);
             toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             loadPengajuan();
@@ -353,7 +367,7 @@ const Pengajuan = () => {
                             sortable
                             alignHeader="center"
                             bodyClassName="text-center"
-                            style={{ minWidth: '7rem', width: '10rem' }}
+                            style={{ minWidth: '10rem', width: '10rem' }}
                             body={statusBodyTemplate} />
                         <Column
                             header="Actions"
