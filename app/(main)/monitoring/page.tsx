@@ -189,11 +189,15 @@ const Monitoring = () => {
     const actionBodyTemplate = (rowData: Magang.Logbook) => {
         return (
             <React.Fragment>
-                <Button icon="pi pi-pencil" label='Catatan' outlined className="mr-2" size="small" onClick={() => openNew(rowData)} />
+                <Button icon="pi pi-pencil" label='Catatan' outlined size="small" onClick={() => openNew(rowData)} />
             </React.Fragment>
         );
     };
     // -> END
+
+    const lampiranBodyTemplate = (rowData: Magang.Logbook) => {
+        return <Button label='Lihat' size='small' className='p-button-text' />
+    };
 
     return (
         <div className="grid">
@@ -259,8 +263,10 @@ const Monitoring = () => {
                         <Column field='tanggal' header='Tanggal' alignHeader='center' bodyClassName='text-center' style={{ width: '7rem', minWidth: '7rem' }} />
                         <Column field='kegiatan' header='Kegiatan' style={{ width: '50%', minWidth: '50%' }} />
                         <Column field='catatan_pembimbing' header='Catatan Pembimbing' style={{ width: '50%', minWidth: '50%' }} />
-                        <Column field='lampiran_laporan' header='File Progres' alignHeader='center' 
-                            bodyClassName='text-center' 
+                        <Column field='lampiran_laporan' header='File Progres' 
+                            alignHeader='center' 
+                            bodyClassName='text-center'
+                            body={lampiranBodyTemplate}
                             style={{ width: '8rem', minWidth: '8rem' }} />
                         <Column header='Actions' alignHeader='center' bodyClassName='text-center' style={{ width: '10rem', minWidth: '10rem' }}
                             body={actionBodyTemplate} />

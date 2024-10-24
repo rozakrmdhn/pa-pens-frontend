@@ -4,6 +4,7 @@ declare namespace Master {
     // DosenService
     type Dosen = {
         id?: string | undefined;
+        nip?: string;
         nama?: string;
         jenis_kelamin?: string;
         email?: string;

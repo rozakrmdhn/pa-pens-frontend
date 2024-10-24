@@ -21,8 +21,14 @@ const AppMenu = () => {
                 { label: 'Pengajuan', icon: 'pi pi-fw pi-envelope', to: '/pengajuan'},
                 { label: 'Monitoring', icon: 'pi pi-fw pi-desktop', to: '/monitoring'},
                 { label: 'Logbook', icon: 'pi pi-fw pi-file-edit', to: '/logbook'},
-                { label: 'Ploting Dosbing', icon: 'pi pi-fw pi-users', to: '/ploting' },
-                { label: 'Laporan', icon: 'pi pi-fw pi-chart-bar', to: '/laporan'},
+            ]
+        },
+        {
+            label: 'Laporan',
+            items: [
+                { label: 'Laporan', icon: 'pi pi-fw pi-chart-bar', to: '/laporan/magang'},
+                { label: 'Ploting Dosen', icon: 'pi pi-fw pi-users', to: '/laporan/ploting' },
+                { label: 'Kehadiran Mahasiswa', icon: 'pi pi-fw pi-chart-pie' }
             ]
         },
         {

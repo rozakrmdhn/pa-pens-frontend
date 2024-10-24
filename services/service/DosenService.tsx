@@ -33,7 +33,11 @@ export const DosenService = {
                 throw error;
             });
     },
-    getDosenById() {
-        
+    plotingDosenList() {
+        return axios.get(`${process.env.API_HOST}/dosen/ploting`)
+            .then((response) => response.data.data as Master.Dosen[])
+            .catch((error) => {
+                throw error;
+            });
     }
 };

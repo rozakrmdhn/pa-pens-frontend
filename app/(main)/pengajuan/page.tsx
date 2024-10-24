@@ -31,6 +31,7 @@ const Pengajuan = () => {
     let emptyDaftar: Magang.Daftar = {
         id: '',
         lama_kp: '',
+        tanggal_kp: undefined,
         tempat_kp: '',
         alamat: '',
         kota: '',
@@ -155,8 +156,8 @@ const Pengajuan = () => {
         }
     };
 
-    const dateBodyTemplate = (rowData: Demo.Customer) => {
-        return formatDate(rowData.date);
+    const dateBodyTemplate = (rowData: Magang.Daftar) => {
+        return rowData.tanggal_kp ? formatDate(rowData.tanggal_kp) : '';
     };
     const dateFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         return <Calendar value={options.value} onChange={(e) => options.filterCallback(e.value, options.index)} dateFormat="mm/dd/yy" placeholder="mm/dd/yyyy" mask="99/99/9999" />;
@@ -327,10 +328,6 @@ const Pengajuan = () => {
                         emptyMessage="No data found."
                         header={header} >
                         <Column
-                            field="lama_kp"
-                            sortable
-                            header="Lama KP" />
-                        <Column
                             field="mahasiswa.nrp"
                             sortable
                             header="NRP" />
@@ -343,12 +340,20 @@ const Pengajuan = () => {
                             field="tempat_kp"
                             sortable
                             header="Tempat KP" />
+                        <Column
+                            field="lama_kp"
+                            sortable
+                            header="Lama KP" />
+                        <Column 
+                            header="Tanggal KP"
+                            field='tanggal_kp'
+                            style={{ minWidth: '7rem', width: '7rem' }} />
                         <Column 
                             header="Status" 
                             sortable
-                            style={{ width: '9rem' }}
                             alignHeader="center"
                             bodyClassName="text-center"
+                            style={{ minWidth: '7rem', width: '7rem' }}
                             body={statusBodyTemplate} />
                         <Column
                             header="Actions"
@@ -390,7 +395,18 @@ const Pengajuan = () => {
                             </div>
                         </div>
                         <div className='p-fluid mt-3'>
-                            <div className='field'>
+                            {pengajuan.status_persetujuan === 1 ? (
+                            <div className="field">
+                                <label htmlFor="tanggal_kp">Tanggal Mulai KP</label>
+                                <InputText 
+                                    id='tanggal_kp' 
+                                    type='date' 
+                                    value={pengajuan?.tanggal_kp ? new Date(pengajuan.tanggal_kp).toISOString().slice(0, 10) : ''} 
+                                    onChange={(e) => handleInputChange(e, 'tanggal_kp')} />
+                            </div>
+                            ) : (
+                            <div className="field">
+                                <label htmlFor="catatan_koordinator_kp">Catatan</label>
                                 <InputText 
                                     id='catatan_koordinator_kp' 
                                     placeholder='Catatan'
@@ -398,6 +414,7 @@ const Pengajuan = () => {
                                     onChange={(e) => handleInputChange(e, 'catatan_koordinator_kp')} 
                                 />
                             </div>
+                            )}
                         </div>
                     </Dialog>
 

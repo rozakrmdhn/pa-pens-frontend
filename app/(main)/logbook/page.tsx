@@ -52,6 +52,7 @@ const Logbook = () => {
     const [logbook, setLogbook] = useState<Magang.Logbook>(emptyLogbook);
     const [logbooks, setLogbooks] = useState<Magang.Logbook[]>([]);
     const [anggotas, setAnggotas] = useState<Magang.Anggota[]>([]);
+    const [monitorings, setMonitorings] = useState<Magang.Logbook[]>([]);
 
     // setState for Dropdown onChange
     const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Magang.Anggota | null>(null);
@@ -158,9 +159,14 @@ const Logbook = () => {
         try {
             // Endpoint : api/logbook/mahasiswa
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
+            // Endpoint : api/logbook/monitoring
+            const monitoring = await LogbookService.getLogbookMonitoring(selectedAnggota);
+            
             setLogbooks(getData(result.data));
+            setMonitorings(getData(monitoring.data));
             setCardLogbookView(true);
             setLoading(false);
+            
         } catch (error: any) {
             setCardLogbookView(false);
             const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
@@ -343,6 +349,15 @@ const Logbook = () => {
                             style={{ width: '8rem', minWidth: '8rem' }} />
                         <Column header='Actions' alignHeader='center' bodyClassName='text-center' style={{ width: '9rem', minWidth: '9rem' }}
                             body={actionBodyTemplate} />
+                    </DataTable>
+
+                    <DataTable
+                        value={monitorings}
+                        className="p-datatable-gridlines"
+                        emptyMessage="No data found.">
+                        <Column
+                            field='catatan_pembimbing'
+                            header="Catatan Pembimbing PENS" />
                     </DataTable>
 
                     <Dialog modal visible={logbookDialog} onHide={hideDialog} header='Logbook' footer={dialogFooter} className='p-fluid' style={{ width: '650px' }}>

@@ -49,4 +49,12 @@ export const LogbookService = {
                 throw error;
             });
     },
+    getLogbookMonitoring(logbookData: Magang.Logbook) {
+        return axios.post(`${process.env.API_HOST}/logbook/monitoring`, logbookData)
+            .then((response) => response.data)
+            .catch((error) => {
+                console.error(error);
+                throw error;
+            });
+    },
 };

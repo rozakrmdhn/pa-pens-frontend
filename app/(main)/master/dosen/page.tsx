@@ -22,6 +22,7 @@ const Dosen = () => {
 
     let emptyDosen: Master.Dosen = {
         id: '',
+        nip: '',
         nama: '',
         jenis_kelamin: '',
         email: '',
@@ -258,6 +259,12 @@ const Dosen = () => {
                         </div>
                     } >
                         <Column 
+                            field="nip" 
+                            header="NIP" 
+                            filterMenuStyle={{ width: '14rem' }} 
+                            style={{ minWidth: '12rem' }} 
+                            sortable  />
+                        <Column 
                             field="nama" 
                             header="Nama" 
                             filter
@@ -268,12 +275,6 @@ const Dosen = () => {
                             header="Jenkel"
                             bodyClassName="text-center" 
                             style={{ minWidth: '8rem' }} 
-                            sortable  />
-                        <Column 
-                            field="email" 
-                            header="Email" 
-                            filterMenuStyle={{ width: '14rem' }} 
-                            style={{ minWidth: '12rem' }} 
                             sortable  />
                         <Column 
                             field="nomor_hp" 
@@ -295,6 +296,11 @@ const Dosen = () => {
                     </DataTable>
 
                     <Dialog visible={dosenDialog} header={dosen.id ? "Edit Dosen" : "New Dosen"} style={{ width: '450px' }} modal className="p-fluid" footer={dialogFooter} onHide={hideDialog}>
+                        <div className='field'>
+                            <label htmlFor="nip">NIP</label>
+                            <InputText id='nip' value={dosen.nip || ''} onChange={(e) => handleInputChange(e, 'nip')} />
+                            {submitted && !dosen.nip && <small id="nip-help" className="p-error">NIP is required.</small>}
+                        </div>
                         <div className="field">
                             <label htmlFor="nama">Nama</label>
                             <InputText id="nama" autoComplete="off" aria-describedby="nama-help" required value={dosen.nama || ''} onChange={(e) => handleInputChange(e, 'nama')} />
@@ -303,18 +309,22 @@ const Dosen = () => {
                         <div className="field">
                             <label htmlFor="jenis_kelamin">Jenis Kelamin</label>
                             <Dropdown id="jenis_kelamin" value={dosen.jenis_kelamin} options={genderOptions} onChange={(e) => handleInputChange(e, 'jenis_kelamin')} placeholder="Select Gender" />
+                            {submitted && !dosen.jenis_kelamin && <small id="jenis_kelamin-help" className="p-error">Gender is required.</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="email">Email</label>
                             <InputText id="email" autoComplete="off" value={dosen.email || ''} onChange={(e) => handleInputChange(e, 'email')} />
+                            {submitted && !dosen.email && <small id="email-help" className="p-error">Email is required.</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="nomor_hp">Nomor HP</label>
                             <InputText id="nomor_hp" autoComplete="off" value={dosen.nomor_hp || ''} onChange={(e) => handleInputChange(e, 'nomor_hp')} />
+                            {submitted && !dosen.nomor_hp && <small id="nomor_hp-help" className="p-error">Phone is required.</small>}
                         </div>
                         <div className="field">
                             <label htmlFor="alamat">Alamat</label>
                             <InputText id="alamat" autoComplete="off" value={dosen.alamat || ''} onChange={(e) => handleInputChange(e, 'alamat')} />
+                            {submitted && !dosen.alamat && <small id="alamat-help" className="p-error">Address is required.</small>}
                         </div>
                     </Dialog>
 

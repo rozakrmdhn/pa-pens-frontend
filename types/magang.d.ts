@@ -5,6 +5,7 @@ declare namespace Magang {
     type Daftar = {
         id?: string | undefined;
         lama_kp?: string;
+        tanggal_kp?: Date;
         tempat_kp?: string;
         alamat?: string;
         provinsi?: string | undefined;
