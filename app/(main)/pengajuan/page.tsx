@@ -353,7 +353,7 @@ const Pengajuan = () => {
                             sortable
                             alignHeader="center"
                             bodyClassName="text-center"
-                            style={{ minWidth: '7rem', width: '7rem' }}
+                            style={{ minWidth: '7rem', width: '10rem' }}
                             body={statusBodyTemplate} />
                         <Column
                             header="Actions"
