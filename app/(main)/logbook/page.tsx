@@ -416,11 +416,19 @@ const Logbook = () => {
                         </div>
                         <div className='field'>
                             <label htmlFor="">Foto</label>
-                            <InputText id='' type='file' />
+                            <InputText 
+                                id='lampiran_foto' 
+                                type='file' 
+                                accept="image/*"
+                                onChange={(e) => handleInputChange(e, 'lampiran_foto')} />
                         </div>
                         <div className='field'>
                             <label htmlFor="">File Progres</label>
-                            <InputText id='' type='file' />
+                            <InputText 
+                                id='lampiran_laporan' 
+                                type='file' 
+                                accept=".pdf"
+                                onChange={(e) => handleInputChange(e, 'lampiran_laporan')} />
                         </div>
                     </Dialog>
 
