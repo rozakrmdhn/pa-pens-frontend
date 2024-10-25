@@ -61,4 +61,5 @@ export type {
     AppMenuItem,
     Master,
     Magang,
+    Laporan,
 };

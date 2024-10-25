@@ -36,8 +36,13 @@ const Laporan = () => {
                             </h6>
                         </li>
                         <li>
-                            <h6 className='mb-1'><b>[ PROGRES ] </b>
+                            <h6 className='mb-1'><b>[ DONE ] </b>
                                 Menampilkan jumlah Mahasiswa PJJ yang melaksanakan Kerja Praktek berdasarkan Kabupaten
+                            </h6>
+                        </li>
+                        <li>
+                            <h6 className='mb-1'><b>[ PROGRES ] </b>
+                                Menampilkan pengajuan Kerja Praktek yang Disetujui dan Ditolak
                             </h6>
                         </li>
                         <li>
@@ -48,11 +53,6 @@ const Laporan = () => {
                         <li>
                             <h6 className='mb-1'>
                                 Menampilkan progres Mahasiswa PJJ dalam melaksanakan Kerja Praktek
-                            </h6>
-                        </li>
-                        <li>
-                            <h6 className='mb-1'>
-                                Menampilkan pengajuan Kerja Praktek yang Disetujui dan Ditolak
                             </h6>
                         </li>
                         <li>

@@ -28,6 +28,7 @@ const AppMenu = () => {
             items: [
                 { label: 'Laporan', icon: 'pi pi-fw pi-chart-bar', to: '/laporan/magang'},
                 { label: 'Ploting Dosen', icon: 'pi pi-fw pi-users', to: '/laporan/ploting' },
+                { label: 'Sebaran Mahasiswa', icon: 'pi pi-fw pi-map', to: '/laporan/sebaran-mahasiswa' },
                 { label: 'Kehadiran Mahasiswa', icon: 'pi pi-fw pi-chart-pie' }
             ]
         },
@@ -37,6 +38,7 @@ const AppMenu = () => {
                 { label: 'Dosen', icon: 'pi pi-fw pi-database', to: '/master/dosen'},
                 { label: 'Mahasiswa', icon: 'pi pi-fw pi-database', to: '/master/mahasiswa'},
                 { label: 'Mitra', icon: 'pi pi-fw pi-database', to: '/master/mitra'},
+                // { label: 'Klasifikasi KP', icon: 'pi pi-fw pi-link', to: '' },
             ]
         },
         {

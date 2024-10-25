@@ -22,6 +22,11 @@ declare namespace Master {
         alamat?: string;
         jurusan?: string;
     };
+    type Sebaran = {
+        provinsi?: string;
+        kota?: string;
+        jumlah_mahasiswa?: string;
+    }
 
     // WilayahService
     type Provinces = {

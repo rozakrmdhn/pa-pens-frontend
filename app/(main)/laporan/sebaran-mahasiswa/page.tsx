@@ -10,30 +10,30 @@ import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
-import { DosenService } from '@/services/service/DosenService';
-import { Demo, Master, Magang } from '@/types';
+import { Laporan } from '@/types';
+import { MahasiswaService } from '@/services/service/MahasiswaService';
 
 const ReportPage = () => {
     useEffect(() => {
-        loadDosenList();
+        loadLaporan();
         initFilters();
     }, []);
 
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
-    const [rows, setRows] = useState(10);
+    const [rows, setRows] = useState(25);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
     const [globalFilterValue, setGlobalFilterValue] = useState('');
 
-    const [dosens, setDosens] = useState<Master.Dosen[]>([]);
+    const [laporans, setLaporans] = useState<Laporan.Sebaran[]>([]);
 
     // Breadcrumb
     const breadcrumbHome = { icon: 'pi pi-home', command: () => router.push('/dashboard') };
     const breadcrumbItems = [
         { label: 'Laporan' },
-        { label: 'Ploting Dosen', command: () => router.push('/ploting') }
+        { label: 'Sebaran Mahasiswa', command: () => router.push('/sebaran-mahasiswa') }
     ];
 
     const initFilters = () => {
@@ -54,16 +54,16 @@ const ReportPage = () => {
         setGlobalFilterValue(value);
     };
 
-    const getData = (data: Master.Dosen[]) => {
+    const getData = (data: Laporan.Sebaran[]) => {
         return [...(data || [])].map((d) => {
             return d;
         });
     };
 
-    const loadDosenList = async () => {
+    const loadLaporan = async () => {
         try {
-            await DosenService.plotingDosenList().then((data) => {
-                setDosens(getData(data));
+            await MahasiswaService.getSebaranMahasiswa().then((data) => {
+                setLaporans(getData(data));
                 setLoading(false);
             });
         } catch (error) {
@@ -74,7 +74,7 @@ const ReportPage = () => {
     };
 
     const reloadTable = () => {
-        loadDosenList();
+        loadLaporan();
     };
 
     // Header Search, Refresh, and Add Button
@@ -99,14 +99,14 @@ const ReportPage = () => {
             </div>
             <div className="col-12">
                 <div className="flex justify-content-between my-1">
-                    <h5>Data Ploting Dosen</h5>
+                    <h5>Sebaran Mahasiswa</h5>
                 </div>
                 <div className="card p-3">
                 <Toast ref={toast} />
                 <ConfirmDialog />
                 <DataTable
                     ref={dt}
-                    value={dosens}
+                    value={laporans}
                     paginator
                     className="p-datatable-gridlines"
                     showGridlines
@@ -142,28 +142,21 @@ const ReportPage = () => {
                         </div>
                     } >
                         <Column 
-                            field="nip" 
-                            header="NIP"
+                            field="provinsi" 
+                            header="Provinsi"
                             style={{ width: '12rem' }} 
                             sortable />
                         <Column 
-                            field="nama" 
-                            header="Nama" 
+                            field="kota" 
+                            header="Kabupaten/Kota" 
                             sortable
                             style={{ minWidth: '12rem' }} />
                         <Column 
-                            field="jumlah_mitra"
-                            header="Jumlah Mitra"
-                            alignHeader='center'
-                            bodyClassName="text-center" 
-                            style={{ width: '10rem' }} 
-                            sortable />
-                        <Column 
                             field="jumlah_mahasiswa" 
-                            header="Mahasiswa"
+                            header="Jumlah Mahasiswa"
                             alignHeader='center'
                             bodyClassName="text-center" 
-                            style={{ width: '10rem' }} 
+                            style={{ width: '12rem' }} 
                             sortable />
                     </DataTable>
 

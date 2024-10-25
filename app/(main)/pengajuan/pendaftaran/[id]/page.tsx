@@ -434,6 +434,14 @@ const FormPendaftaran = () => {
                             <Button label="Simpan" icon="pi pi-check" size="small" onClick={savePendaftaran} />
                         </div>
                     </div> )}
+
+                    <div className='field grid'>
+                        <div className='md:col-2'></div>
+                        <div className='md:col-6'>
+                            <Button label="Batal" severity='secondary' icon="pi pi-times" size="small" className='mr-2' outlined />
+                            <Button label="Simpan" icon="pi pi-check" size="small" onClick={savePendaftaran} />
+                        </div>
+                    </div>
                 </div>
             </div>
             <div className="col-12">

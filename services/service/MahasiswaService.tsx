@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Master } from '@/types';
+import { Master, Laporan } from '@/types';
 
 export const MahasiswaService = {
     getMahasiswa() {
@@ -35,5 +35,12 @@ export const MahasiswaService = {
     },
     getDosenById() {
         
+    },
+    getSebaranMahasiswa() {
+        return axios.get(`${process.env.API_HOST}/mahasiswa/sebaran`)
+            .then((response) => response.data.data as Laporan.Sebaran[])
+            .catch((error) => {
+                throw error;
+            });
     }
 };
