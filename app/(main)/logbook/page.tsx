@@ -53,6 +53,7 @@ const Logbook = () => {
     const [logbooks, setLogbooks] = useState<Magang.Logbook[]>([]);
     const [anggotas, setAnggotas] = useState<Magang.Anggota[]>([]);
     const [monitorings, setMonitorings] = useState<Magang.Logbook[]>([]);
+    const [fileGambar, setFileGambar] = useState();
 
     // setState for Dropdown onChange
     const [dropdownMahasiswa, setDropdownMahasiswa] = useState<Magang.Anggota | null>(null);
@@ -129,7 +130,7 @@ const Logbook = () => {
 
     // Handle Input Change
     const handleInputChange = (e: any, field: string) => {
-        const value = e.target.value;
+        const value = e.target.type === 'file' ? e.target.files[0] : e.target.value;
 
         setLogbook({ 
             ...logbook, 
@@ -415,6 +416,22 @@ const Logbook = () => {
                                 options={dropdownMatakuliah}
                                 placeholder='Pilih Matakuliah'
                                 onChange={(e) => handleInputChange(e, 'matkul_diajarkan')} />
+                        </div>
+                        <div className='field'>
+                            <label htmlFor="">Foto</label>
+                            <InputText 
+                                id='lampiran_foto' 
+                                type='file' 
+                                accept="image/*"
+                                onChange={(e) => handleInputChange(e, 'foto')} />
+                        </div>
+                        <div className='field'>
+                            <label htmlFor="">File Progres</label>
+                            <InputText 
+                                id='lampiran_laporan' 
+                                type='file' 
+                                accept=".pdf"
+                                onChange={(e) => handleInputChange(e, 'lampiran_laporan')} />
                         </div>
                     </Dialog>
 

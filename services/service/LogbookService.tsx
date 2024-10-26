@@ -10,12 +10,18 @@ export const LogbookService = {
             });
     },
     createLogbook(logbookData: Magang.Logbook) {
-        return axios.post(`${process.env.API_HOST}/logbook`, logbookData)
-            .then((response) => response.data)
-            .catch((error) => {
-                console.error("There was an error creating the data!", error);
-                throw error;
-            });
+        console.log(logbookData);
+        
+        return axios.post(`${process.env.API_HOST}/logbook`, logbookData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
+        .then((response) => response.data)
+        .catch((error) => {
+            console.error("There was an error creating the data!", error);
+            throw error;
+        });
     },
     getLogbookByMahasiswa(id: string) {
         return axios.get(`${process.env.API_HOST}/logbook/${id}`)
