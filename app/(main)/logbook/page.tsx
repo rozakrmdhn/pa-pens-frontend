@@ -130,6 +130,7 @@ const Logbook = () => {
     // Handle Input Change
     const handleInputChange = (e: any, field: string) => {
         const value = e.target.value;
+
         setLogbook({ 
             ...logbook, 
             [field]: value,
@@ -179,6 +180,7 @@ const Logbook = () => {
     const saveLogbook = async () => {
         if (logbook.kegiatan?.trim()) {
             try {
+                console.log(logbook);
                 // Endpoint : api/logbook
                 const result = await LogbookService.createLogbook(logbook);
                 toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
@@ -413,22 +415,6 @@ const Logbook = () => {
                                 options={dropdownMatakuliah}
                                 placeholder='Pilih Matakuliah'
                                 onChange={(e) => handleInputChange(e, 'matkul_diajarkan')} />
-                        </div>
-                        <div className='field'>
-                            <label htmlFor="">Foto</label>
-                            <InputText 
-                                id='lampiran_foto' 
-                                type='file' 
-                                accept="image/*"
-                                onChange={(e) => handleInputChange(e, 'lampiran_foto')} />
-                        </div>
-                        <div className='field'>
-                            <label htmlFor="">File Progres</label>
-                            <InputText 
-                                id='lampiran_laporan' 
-                                type='file' 
-                                accept=".pdf"
-                                onChange={(e) => handleInputChange(e, 'lampiran_laporan')} />
                         </div>
                     </Dialog>
 
