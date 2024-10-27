@@ -55,8 +55,8 @@ const Dosen = () => {
 
     // Default Value Option
     const genderOptions = [
-        { label: 'Male', value: 'Male' },
-        { label: 'Female', value: 'Female' }
+        { label: 'Laki-Laki', value: 'Laki-Laki' },
+        { label: 'Perempuan', value: 'Perempuan' }
     ];
 
     const handleInputChange = (e: any, field: string) => {
@@ -142,8 +142,10 @@ const Dosen = () => {
                     toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
                 }
                 fetchDosen();  // Re-fetch the updated list
-            } catch (error) {
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Dosen', life: 3000 });
+            } catch (error: any) {
+                const errorMessage = error?.response?.data?.message || 'Failed to save data';
+                const errorMessages = error?.response?.data?.errors || errorMessage;
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessages, life: 3000 });
             } finally {
                 setDosenDialog(false);
             }
