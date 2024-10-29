@@ -7,6 +7,7 @@ const nextConfig = {
     env: {
         API_HOST: process.env.API_HOST,
         API_INDONESIA: process.env.API_INDONESIA,
+        JWT_TOKEN: process.env.JWT_TOKEN
     },
 };
 

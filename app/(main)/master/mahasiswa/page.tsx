@@ -15,11 +15,6 @@ import { Dialog } from 'primereact/dialog';
 import { Demo, Master, Magang } from '@/types';
 
 const Mahasiswa = () => {
-    useEffect(() => {
-        fetchMahasiswa();
-        initFilters();
-    }, []);
-
     let emptyMahasiswa: Master.Mahasiswa = {
         id: '',
         nrp: '',
@@ -33,6 +28,7 @@ const Mahasiswa = () => {
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const isLoaded = useRef(false);
     const [rows, setRows] = useState(10);
     const [loading, setLoading] = useState(true);
     const [submitted, setSubmitted] = useState(false);
@@ -119,15 +115,18 @@ const Mahasiswa = () => {
     };
 
     const fetchMahasiswa = async () => {
-        try {
-            await MahasiswaService.getMahasiswa().then((data) => {
-                setMahasiswas(getData(data));
+        if (isLoaded) {
+            try {
+                await MahasiswaService.getMahasiswa().then((data) => {
+                    setMahasiswas(getData(data));
+                    setLoading(false);
+                });
+            } catch (error: any) {
+                const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+            } finally {
                 setLoading(false);
-            });
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch data', life: 3000 });
-        } finally {
-            setLoading(false);
+            }
         }
     };
 
@@ -135,13 +134,14 @@ const Mahasiswa = () => {
     const deleteMahasiswa = async () => {
         try {
             if (mahasiswa.id) {
-                await MahasiswaService.deleteMahasiswa(mahasiswa.id);
+                const result = await MahasiswaService.deleteMahasiswa(mahasiswa.id);
                 setMahasiswas(mahasiswas.filter(d => d.id !== mahasiswa.id));
-                toast.current?.show({ severity: 'info', summary: 'Success', detail: 'Mahasiswa deleted successfully', life: 3000 });
+                toast.current?.show({ severity: result.status, summary: 'Success', detail: result.message, life: 3000 });
             }
             setDeleteMahasiswaDialog(false);
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to delete data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
@@ -151,15 +151,16 @@ const Mahasiswa = () => {
         if (mahasiswa.nama?.trim()) {
             try {
                 if (mahasiswa.id) {
-                    await MahasiswaService.updateMahasiswa(mahasiswa.id, mahasiswa);  // Update API call
-                    toast.current?.show({ severity: 'success', summary: 'Updated', detail: 'Mahasiswa updated successfully', life: 3000 });
+                    const result = await MahasiswaService.updateMahasiswa(mahasiswa.id, mahasiswa);  // Update API call
+                    toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
                 } else {
-                    await MahasiswaService.createMahasiswa(mahasiswa);  // Create API call
-                    toast.current?.show({ severity: 'success', summary: 'Created', detail: 'Mahasiswa created successfully', life: 3000 });
+                    const result = await MahasiswaService.createMahasiswa(mahasiswa);  // Create API call
+                    toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
                 }
                 fetchMahasiswa();  // Re-fetch the updated list
-            } catch (error) {
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to save Mahasiswa', life: 3000 });
+            } catch (error: any) {
+                const errorMessage = error?.response?.data?.message || 'Failed to save data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
             } finally {
                 setMahasiswaDialog(false);
             }
@@ -206,6 +207,14 @@ const Mahasiswa = () => {
             <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteMahasiswa} />
         </>
     );
+
+    useEffect(() => {
+        if (!isLoaded.current) {
+            fetchMahasiswa();
+            isLoaded.current = true;
+        }
+        initFilters();
+    }, []);
 
     return (
         <div className="grid">
