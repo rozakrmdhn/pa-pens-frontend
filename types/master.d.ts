@@ -1,5 +1,18 @@
 /* Types */
 declare namespace Master {
+
+    // AuthService
+    type User = {
+        email?: string;
+        password?: string;
+        // role?: string;
+        // access_token: string;
+        // refresh_token: string;
+        // expires_on: number;
+        // exp: number;
+        // iat: number;
+        // jti: number;
+    };
     
     // DosenService
     type Dosen = {
