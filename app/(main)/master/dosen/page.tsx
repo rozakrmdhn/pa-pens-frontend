@@ -15,11 +15,6 @@ import { DosenService } from '@/services/service/DosenService';
 import { Demo, Master, Magang } from '@/types';
 
 const Dosen = () => {
-    useEffect(() => {
-        fetchDosen();
-        initFilters();
-    }, []);
-
     let emptyDosen: Master.Dosen = {
         id: '',
         nip: '',
@@ -33,6 +28,7 @@ const Dosen = () => {
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const isLoaded = useRef(false);
     const [rows, setRows] = useState(10);
     const [loading, setLoading] = useState(true);
     const [submitted, setSubmitted] = useState(false);
@@ -115,15 +111,18 @@ const Dosen = () => {
     };
 
     const fetchDosen = async () => {
-        try {
-            await DosenService.getDosen().then((data) => {
-                setDosens(getData(data));
+        if (isLoaded) {
+            try {
+                await DosenService.getDosen().then((data) => {
+                    setDosens(getData(data));
+                    setLoading(false);
+                });
+            } catch (error: any) {
+                const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+            } finally {
                 setLoading(false);
-            });
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch data', life: 3000 });
-        } finally {
-            setLoading(false);
+            }
         }
     };
     
@@ -210,6 +209,14 @@ const Dosen = () => {
             <Button label="Yes" icon="pi pi-check" size="small" text onClick={deleteDosen} />
         </>
     );
+
+    useEffect(() => {
+        if (!isLoaded.current) {
+            fetchDosen();
+            isLoaded.current = true;
+        }
+        initFilters();
+    }, []);
 
     return (
         <div className="grid">

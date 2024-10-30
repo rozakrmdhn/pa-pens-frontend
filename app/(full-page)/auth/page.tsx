@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 import { useRouter } from 'next/navigation';
-import React, { useContext, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
+import { Toast } from 'primereact/toast';
 import { Checkbox } from 'primereact/checkbox';
 import { Button } from 'primereact/button';
 import { Password } from 'primereact/password';
@@ -9,13 +10,12 @@ import { LayoutContext } from '../../../layout/context/layoutcontext';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { AuthService } from '@/services/service/AuthService';
-import { Master } from '@/types';
 
 const LoginPage = () => {
+    const toast = useRef<Toast>(null);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [checked, setChecked] = useState(false);
-    const [error, setError] = useState(null);
     const { layoutConfig } = useContext(LayoutContext);
 
     const router = useRouter();
@@ -31,21 +31,20 @@ const LoginPage = () => {
                 router.push('/');
             }
         } catch (error: any) {
-            console.log(error);
+            const errorMessage = error?.response?.data?.message;
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
     return (
         <div className={containerClassName}>
+            <Toast ref={toast} />
             <div className="flex flex-column align-items-center justify-content-center">
                 <img src="https://reg.mbkm.pens.ac.id/assets/dist/img/logo_pens.png" alt="Sakai logo" className="mb-5 w-6rem flex-shrink-0" />
                 <div className="w-full surface-card py-5 px-5 sm:px-5" style={{ borderRadius: '20px' }}>
                     <div className="text-center mb-5">
                         <span className="text-600 font-medium">Sign in to continue</span>
                     </div>
-
-                    {error && <p className="text-red-500 text-center mb-5">{error}</p>} {/* Display error message */}
-
                     <div>
                         <label htmlFor="email1" className="block text-900 text-md font-medium mb-2">
                             Email

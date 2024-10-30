@@ -6,9 +6,17 @@ import { LayoutContext } from './context/layoutcontext';
 import { MenuProvider } from './context/menucontext';
 import Link from 'next/link';
 import { AppMenuItem } from '@/types';
+import { AuthService } from '@/services/service/AuthService';
+import { useRouter } from 'next/navigation';
 
 const AppMenu = () => {
     const { layoutConfig } = useContext(LayoutContext);
+    const router = useRouter();
+
+    const handleLogout = () => {
+        AuthService.logout();
+        router.push('/auth');
+    };
 
     const model: AppMenuItem[] = [
         {
@@ -46,7 +54,7 @@ const AppMenu = () => {
             items: [
                 { label: 'Profil', icon: 'pi pi-fw pi-user', to: '/pengaturan/profil'},
                 { label: 'Keamanan', icon: 'pi pi-fw pi-lock', to: '/pengaturan/keamanan'},
-                { label: 'Logout', icon: 'pi pi-fw pi-sign-out', to: '/'}
+                { label: 'Logout', icon: 'pi pi-fw pi-sign-out', command: handleLogout}
             ]
         }
     ];
