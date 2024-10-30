@@ -2,16 +2,19 @@
 declare namespace Master {
 
     // AuthService
-    type User = {
+    type Auth = {
         email?: string;
         password?: string;
-        // role?: string;
-        // access_token: string;
-        // refresh_token: string;
-        // expires_on: number;
-        // exp: number;
-        // iat: number;
-        // jti: number;
+    };
+
+    // UserService
+    type User = {
+        id?: string | undefined;
+        email?: string;
+        password?: string;
+        role?: string;
+        id_mahasiswa?: string;
+        id_dosen?: string;
     };
     
     // DosenService

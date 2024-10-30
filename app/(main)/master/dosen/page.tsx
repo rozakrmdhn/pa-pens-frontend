@@ -13,6 +13,7 @@ import { ConfirmDialog, confirmDialog } from 'primereact/confirmdialog';
 import { Toast } from 'primereact/toast';
 import { DosenService } from '@/services/service/DosenService';
 import { Demo, Master, Magang } from '@/types';
+import { AuthService } from '@/services/service/AuthService';
 
 const Dosen = () => {
     let emptyDosen: Master.Dosen = {
