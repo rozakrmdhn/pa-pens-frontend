@@ -35,6 +35,7 @@ export function middleware(req: NextRequest) {
     }
 
     const protectedPaths = [
+        '/',
         '/dashboard', 
         '/pengajuan',
         '/monitoring',
@@ -63,5 +64,6 @@ export const config = {
         '/logbook/:path*',
         '/master/dosen/:path*',
         '/master/mahasiswa/:path*',
+        '/'
     ],
 };
