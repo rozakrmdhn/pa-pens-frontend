@@ -94,13 +94,11 @@ const Dosen = () => {
 
     const confirmDeleteDosen = (dosen: Master.Dosen) => {
         setDosen({ ...dosen });
-        // console.log(dosen);
         setDeleteDosenDialog(true);
     };
 
     const editDosen = (dosen: Master.Dosen) => {
         setDosen({ ...dosen });
-        // console.log(dosen);
         setDosenDialog(true);
     };
 
@@ -135,18 +133,24 @@ const Dosen = () => {
                     // Endpoint : api/dosen/{id}
                     const result = await DosenService.updateDosen(dosen.id, dosen);  // Update API call
                     toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
+                    if (result.status === 'success') {
+                        fetchDosen();
+                        setDosenDialog(false);
+                    }
                 } else {
                     // Endpoint : api/dosen
                     const result = await DosenService.createDosen(dosen);  // Create API call
                     toast.current?.show({ severity: result.status, summary: 'Created', detail: result.message, life: 3000 });
+                    if (result.status === 'success') {
+                        fetchDosen();
+                        setDosenDialog(false);
+                    }
                 }
-                fetchDosen();  // Re-fetch the updated list
             } catch (error: any) {
                 const errorMessage = error?.response?.data?.message || 'Failed to save data';
                 const errorMessages = error?.response?.data?.errors || errorMessage;
                 toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessages, life: 3000 });
-            } finally {
-                setDosenDialog(false);
+                setDosenDialog(true);
             }
         }
     };
@@ -160,8 +164,9 @@ const Dosen = () => {
                 toast.current?.show({ severity: result.status, summary: 'Success', detail: result.message, life: 3000 });
             }
             setDeleteDosenDialog(false);
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to delete data', life: 3000 });
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message;
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
