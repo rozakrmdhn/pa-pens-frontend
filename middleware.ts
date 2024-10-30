@@ -20,12 +20,10 @@ export function middleware(req: NextRequest) {
             // Check if the token is expired
             const isExpired = decodedToken && decodedToken.exp * 1000 < Date.now();
 
-            console.log(isExpired);
-
             if (isExpired) {
                 console.warn("Token has expired. Logging out...");
                 // Redirect to refresh token route or login page
-                const refreshUrl = new URL('/auth/refresh', req.url);
+                const refreshUrl = new URL('/auth/access', req.url);
                 return NextResponse.redirect(refreshUrl);
             }
 
