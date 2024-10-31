@@ -17,15 +17,19 @@ import { Toast } from 'primereact/toast';
 import { Demo, Master, Magang } from '@/types';
 import { DosenService } from '@/services/service/DosenService';
 import { MagangService } from '@/services/service/MagangService';
+import Cookies from 'js-cookie';
+import jwt from 'jsonwebtoken';
 
 type DropdownOption = { label: string; value: string };
 
 const Pengajuan = () => {
     useEffect(() => {
-        loadPengajuan();
-        loadDosen();
+        if (!isLoaded.current) {
+            loadPengajuan();
+            loadDosen();
+            isLoaded.current = true;
+        }
         initFilters();
-        
     }, []);
 
     let emptyDaftar: Magang.Daftar = {
@@ -43,6 +47,7 @@ const Pengajuan = () => {
     const router = useRouter();
     const toast = useRef<Toast>(null);
     const dt = useRef<DataTable<any>>(null);
+    const isLoaded = useRef(false);
     const menu = useRef<Menu>(null);
 
     const [rows, setRows] = useState(10);
@@ -106,7 +111,7 @@ const Pengajuan = () => {
     const openVerifikasi = (pengajuan: Magang.Daftar) => {
         setPengajuan({ ...pengajuan});
         setVerifikasiDialog(true);
-        console.log(pengajuan);
+        // console.log(pengajuan);
     };
     // Hide Verifikasi Dialog
     const hideDialog = () => {
@@ -126,14 +131,43 @@ const Pengajuan = () => {
     };
 
     const loadPengajuan = async () => {
-        // Endpoint : api/magang
         try {
-            await MagangService.getPengajuan().then((data) => {
-                setPengajuans(getData(data));
-                setLoading(false);
-            });
-        } catch (error) {
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch data', life: 3000 });
+            // Endpoint : api/magang
+            // await MagangService.getPengajuan().then((data) => {
+            //     setPengajuans(getData(data));
+            //     setLoading(false);
+            // });
+
+            // Retrieve and parse the 'currentUser' cookie
+            const currentUserCookie = Cookies.get('currentUser');
+            if (!currentUserCookie) throw new Error('Authentication cookie not found.');
+
+            // Parse cookie and decode access token
+            const { accessToken, user } = JSON.parse(currentUserCookie);
+            const decodedToken: any = jwt.decode(accessToken); // Decode to check validity if needed
+
+            // Check the role from the parsed user object
+            const role = user?.role;
+            const id_mahasiswa = user?.id_mahasiswa;
+
+            console.log(id_mahasiswa);
+
+            // Fetch data based on role
+            let data;
+            if (role === 'admin') {
+                await MagangService.getPengajuan().then((data) => {
+                    setPengajuans(getData(data));
+                    setLoading(false);
+                });
+            } else {
+                await MagangService.getPengajuanByMahasiswa(id_mahasiswa).then((data) => {
+                    setPengajuans(getData(data));
+                    setLoading(false);
+                });
+            }
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         } finally {
             setLoading(false);
         }
@@ -150,7 +184,7 @@ const Pengajuan = () => {
             // Endpoint : api/magang/dosen
             const data = await DosenService.getDosen();
             setDropdownDosenValue(getDataDosen(data));  // Store transformed data for the dropdown
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error loading Dosen data:", error);
         } finally {
             setLoading(false);
@@ -236,8 +270,9 @@ const Pengajuan = () => {
             const result = await MagangService.verifikasiPengajuan(pengajuan.id, pengajuan);
             toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             loadPengajuan();
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         } finally {
             setVerifikasiDialog(false);
         }
@@ -256,8 +291,9 @@ const Pengajuan = () => {
             const result = await MagangService.plotingDosbim(pengajuan.id, pengajuan);
             toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             loadPengajuan();
-        } catch (error) {
-            console.log(error);
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         } finally {
             setPlotingDialog(false);
         }

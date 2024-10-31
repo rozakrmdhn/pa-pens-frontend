@@ -1,5 +1,6 @@
 import axios from "axios";
 import { Magang } from '@/types';
+import getAuthorizationHeader from "../utils/getAuthorizationHeader";
 
 type BulkDataAnggota = {
     mahasiswaList?: {
@@ -9,9 +10,29 @@ type BulkDataAnggota = {
     }[];
 };
 
+// Create an Axios instance
+const apiClient = axios.create({
+    baseURL: process.env.API_HOST, // Set your base URL here
+});
+
+// Add a request interceptor to set the authorization header for each request
+apiClient.interceptors.request.use(
+    (config) => {
+        const headers = getAuthorizationHeader();
+        // Set the Authorization header using Axios headers methods
+        if (headers.Authorization) {
+            config.headers['Authorization'] = headers.Authorization;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
 export const AnggotaService = {
     createBulkAnggota(daftarData: BulkDataAnggota) {
-        return axios.post(`${process.env.API_HOST}/magang/anggota/bulk`, daftarData)
+        return apiClient.post(`${process.env.API_HOST}/magang/anggota/bulk`, daftarData)
             .then((response) => response.data)
             .catch((error) => {
                 console.error("There was an error creating the data!", error);
@@ -19,7 +40,7 @@ export const AnggotaService = {
             });
     },
     getAllAnggota() {
-        return axios.get(`${process.env.API_HOST}/magang/anggota`)
+        return apiClient.get(`${process.env.API_HOST}/magang/anggota`)
             .then((response) => response.data.data as Magang.Anggota[])
             .catch((error) => {
                 console.error("There was an error fetching the data!", error);
@@ -27,7 +48,7 @@ export const AnggotaService = {
             });
     },
     deleteAnggota(id: string) {
-        return axios.delete(`${process.env.API_HOST}/magang/anggota/${id}`)
+        return apiClient.delete(`${process.env.API_HOST}/magang/anggota/${id}`)
             .then((response) => response.data)
             .catch((error) => {
                 console.error("There was an error deleting the data!", error);
@@ -35,7 +56,7 @@ export const AnggotaService = {
             });
     },
     getAnggotaById(id: string) {
-        return axios.get(`${process.env.API_HOST}/magang/anggota/${id}`)
+        return apiClient.get(`${process.env.API_HOST}/magang/anggota/${id}`)
             .then((response) => response.data)
             .catch((error) => {
                 console.error("There was an error fetching the data!", error);
@@ -43,7 +64,7 @@ export const AnggotaService = {
             });
     },
     getAnggotaByMahasiswa(id: string, id_mahasiswa: string) {
-        return axios.get(`${process.env.API_HOST}/magang/anggota/pengajuan/${id}/mahasiswa/${id_mahasiswa}`)
+        return apiClient.get(`${process.env.API_HOST}/magang/anggota/pengajuan/${id}/mahasiswa/${id_mahasiswa}`)
             .then((response) => response.data)
             .catch((error) => {
                 console.error("There was an error fetching the data!", error);
