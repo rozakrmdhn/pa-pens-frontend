@@ -15,7 +15,7 @@ export const AuthService = {
             const { accessToken, user } = response.data.data;
 
             // Set the token as a cookie
-            Cookies.set('currentUser', JSON.stringify({ accessToken, user }), { expires: 7 });
+            Cookies.set('currentUser', JSON.stringify({ accessToken, user }));
 
             // return { accessToken, user };
             return response.data;

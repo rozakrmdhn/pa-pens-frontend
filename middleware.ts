@@ -7,6 +7,7 @@ export function middleware(req: NextRequest) {
     const currentUserCookie = req.cookies.get('currentUser')?.value;
 
     let accessToken = '';
+    let userRole = '';
 
     // Parse the currentUser cookie if it exists
     if (currentUserCookie) {
@@ -15,10 +16,10 @@ export function middleware(req: NextRequest) {
             accessToken = parsedCookie.accessToken || '';
 
             // Decode the JWT token
-            const decodedToken = jwt.decode(accessToken) as { exp: number };
+            const decodedToken = jwt.decode(accessToken) as { iat: number };
 
             // Check if the token is expired
-            const isExpired = decodedToken && decodedToken.exp * 1000 < Date.now();
+            const isExpired = decodedToken && decodedToken.iat + 1800 < Math.floor(Date.now() / 1000);
 
             if (isExpired) {
                 console.warn("Token has expired. Logging out...");
@@ -42,6 +43,7 @@ export function middleware(req: NextRequest) {
         '/logbook',
         '/master/dosen',
         '/master/mahasiswa',
+        '/master/mitra',
     ];
     const protectedRoute = protectedPaths.some(path => req.nextUrl.pathname.startsWith(path));
 
@@ -58,12 +60,13 @@ export function middleware(req: NextRequest) {
 // Matcher function to apply middleware only on specific routes
 export const config = {
     matcher: [
+        '/',
         '/dashboard/:path*',
         '/pengajuan/:path*',
         '/monitoring/:path*',
         '/logbook/:path*',
         '/master/dosen/:path*',
         '/master/mahasiswa/:path*',
-        '/'
+        '/master/mitra/:path*',
     ],
 };
