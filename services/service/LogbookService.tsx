@@ -1,9 +1,30 @@
 import axios from "axios";
 import { Magang } from '@/types';
+import getAuthorizationHeader from '../utils/getAuthorizationHeader';
+
+// Create an Axios instance
+const apiClient = axios.create({
+    baseURL: process.env.API_HOST, // Set your base URL here
+});
+
+// Add a request interceptor to set the authorization header for each request
+apiClient.interceptors.request.use(
+    (config) => {
+        const headers = getAuthorizationHeader();
+        // Set the Authorization header using Axios headers methods
+        if (headers.Authorization) {
+            config.headers['Authorization'] = headers.Authorization;
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 export const LogbookService = {
     getAllLogbook() {
-        return axios.get(`${process.env.API_HOST}/logbook`)
+        return apiClient.get(`${process.env.API_HOST}/logbook`)
             .then((response) => response.data.data as Magang.Logbook[])
             .catch((error) => {
                 throw error;
@@ -12,7 +33,7 @@ export const LogbookService = {
     createLogbook(logbookData: Magang.Logbook) {
         console.log(logbookData);
         
-        return axios.post(`${process.env.API_HOST}/logbook`, logbookData, {
+        return apiClient.post(`${process.env.API_HOST}/logbook`, logbookData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
@@ -24,7 +45,7 @@ export const LogbookService = {
         });
     },
     getLogbookByMahasiswa(id: string) {
-        return axios.get(`${process.env.API_HOST}/logbook/${id}`)
+        return apiClient.get(`${process.env.API_HOST}/logbook/${id}`)
             .then((response) => response.data)
             .catch((error) => {
                 console.error(error);
@@ -32,7 +53,7 @@ export const LogbookService = {
             });
     },
     getLogbookMahasiswa(logbookData: Magang.Logbook) {
-        return axios.post(`${process.env.API_HOST}/logbook/mahasiswa`, logbookData)
+        return apiClient.post(`${process.env.API_HOST}/logbook/mahasiswa`, logbookData)
             .then((response) => response.data)
             .catch((error) => {
                 console.error(error);
@@ -40,7 +61,7 @@ export const LogbookService = {
             });
     },
     deleteLogbook(id: string) {
-        return axios.delete(`${process.env.API_HOST}/logbook/${id}`)
+        return apiClient.delete(`${process.env.API_HOST}/logbook/${id}`)
             .then((response) => response.data)
             .catch((error) => {
                 console.error("There was an error deleting the data!", error);
@@ -48,7 +69,7 @@ export const LogbookService = {
             });
     },
     createLogbookMonitoring(id: string, logbookData: Magang.Logbook) {
-        return axios.put(`${process.env.API_HOST}/logbook/monitoring/${id}`, logbookData)
+        return apiClient.put(`${process.env.API_HOST}/logbook/monitoring/${id}`, logbookData)
             .then((response) => response.data)
             .catch((error) => {
                 console.error("There was an error updating the data!", error);
@@ -56,7 +77,7 @@ export const LogbookService = {
             });
     },
     getLogbookMonitoring(logbookData: Magang.Logbook) {
-        return axios.post(`${process.env.API_HOST}/logbook/monitoring`, logbookData)
+        return apiClient.post(`${process.env.API_HOST}/logbook/monitoring`, logbookData)
             .then((response) => response.data)
             .catch((error) => {
                 console.error(error);

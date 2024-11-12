@@ -16,6 +16,16 @@ import { Dialog } from 'primereact/dialog';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { RadioButton } from 'primereact/radiobutton';
 import { Badge } from 'primereact/badge';
+import { AuthService } from '@/services/service/AuthService';
+
+type UserActive = {
+    user?: {
+        id?: string;
+        id_mahasiswa?: string;
+        id_dosen?: string;
+        role?: string;
+    }
+};
 
 const Logbook = () => {
     // Default Property Value State
@@ -44,6 +54,9 @@ const Logbook = () => {
     const dt = useRef<DataTable<any>>(null);
     const [rows, setRows] = useState(10);
     const menu = useRef<Menu>(null);
+
+    const [userActive, setUserActive] = useState<UserActive>({});
+
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
@@ -104,6 +117,7 @@ const Logbook = () => {
             id: selectedData?.id,
             id_mahasiswa: selectedId,
         });
+
         setBreadcrumbItemName(selectedData?.mahasiswa?.nama || '');
     };
 
@@ -141,13 +155,28 @@ const Logbook = () => {
     };
 
     // Fetching Data Mahasiswa ref Anggota
-    const loadAnggota = async () => {
+    const loadAnggota = async (userActive: any) => {
+        let result;
         try {
-            // Endpoint : api/magang/anggota
-            const result = await AnggotaService.getAllAnggota();
+            if (userActive.user?.role === 'mahasiswa') {
+                const mahasiswaId = userActive.user?.id_mahasiswa;
+                const query = `?id_mahasiswa=${mahasiswaId}`;
+                // Endpoint : api/magang/anggota
+                result = await AnggotaService.getAllAnggota(query);
+            } else if (userActive.user?.role === 'admin') {
+                const query = '';
+                result = await AnggotaService.getAllAnggota(query);
+            } else {
+                const dosenId = userActive.user.id_dosen;
+                const query = `?id_dosen=${dosenId}`;
+                // Endpoint : api/magang/anggota
+                result = await AnggotaService.getAllAnggota(query);
+            }
+
             setAnggotas(result);
-        } catch (error) {
-            console.log('Failed to load data', error);
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
@@ -157,13 +186,13 @@ const Logbook = () => {
             return d;
         });
     };
-    const loadLogbookMahasiswa = useCallback(async () => {
+    const loadLogbook = useCallback(async () => {
         try {
             // Endpoint : api/logbook/mahasiswa
             const result = await LogbookService.getLogbookMahasiswa(selectedAnggota);
             // Endpoint : api/logbook/monitoring
             const monitoring = await LogbookService.getLogbookMonitoring(selectedAnggota);
-            
+
             setLogbooks(getData(result.data));
             setMonitorings(getData(monitoring.data));
             setCardLogbookView(true);
@@ -178,14 +207,35 @@ const Logbook = () => {
         }
     }, [selectedAnggota]); // Dependency array for selectedAnggota
 
+    const loadLogbookMahasiswa = async (userActive: any) => {
+        let user = { id_mahasiswa: userActive.user.id_mahasiswa };
+        try {
+             // Endpoint : api/logbook/mahasiswa
+             const result = await LogbookService.getLogbookMahasiswa(user);
+             // Endpoint : api/logbook/monitoring
+             const monitoring = await LogbookService.getLogbookMonitoring(user);
+
+             setLogbooks(getData(result.data));
+             setMonitorings(getData(monitoring.data));
+             setCardLogbookView(true);
+             setLoading(false);
+
+        } catch (error: any) {
+            setCardLogbookView(false);
+            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const saveLogbook = async () => {
         if (logbook.kegiatan?.trim()) {
             try {
-                console.log(logbook);
                 // Endpoint : api/logbook
                 const result = await LogbookService.createLogbook(logbook);
                 toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
-                loadLogbookMahasiswa();
+                loadLogbook();
             } catch (error: any) {
                 const errorMessage = error?.response?.data?.message || 'Failed to save data';
                 toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
@@ -198,6 +248,7 @@ const Logbook = () => {
     const deleteLogbook = async () => {        
         try {
             if (logbook.id) {
+                // Endpoint: api/logbook/{id}
                 const result = await LogbookService.deleteLogbook(logbook.id);
                 setLogbooks(logbooks.filter(d => d.id !== logbook.id));
                 toast.current?.show({ severity: result.status, summary: 'Success', detail: result.message, life: 3000 });
@@ -210,14 +261,28 @@ const Logbook = () => {
     };
 
     useEffect(() => {
-        loadAnggota();
-        if (selectedAnggota.id_mahasiswa) {
-            loadLogbookMahasiswa();
+        const userActive = AuthService.getCurrentUser();
+        setUserActive({ ...userActive });
+        
+        loadAnggota(userActive);
+
+        if (userActive.user.role === 'mahasiswa') {
+            loadLogbookMahasiswa(userActive);
+        } else if (userActive.user.role === 'admin') {
+            if (selectedAnggota.id_mahasiswa) {
+                loadLogbook();
+            }
+        } else if (userActive.user.role === 'dosen') {
+            loadAnggota(userActive);
+            if (selectedAnggota.id_mahasiswa) {
+                loadLogbook();
+            }
         }
-    }, [selectedAnggota, loadLogbookMahasiswa]);
+
+    }, [selectedAnggota, loadLogbook]);
 
     const reloadTable = () => {
-        loadLogbookMahasiswa();
+        loadLogbook();
     };
 
     const statusBodyTemplate = (rowData: Magang.Logbook) => {
@@ -289,11 +354,12 @@ const Logbook = () => {
                         <div className="col-12 md:col-4">
                             <Dropdown
                                 id="id_mahasiswa"
-                                value={dropdownMahasiswa}
+                                value={ userActive.user?.role === 'mahasiswa' ? 
+                                    (userActive.user?.id_mahasiswa) : (dropdownMahasiswa)}
                                 options={dropdownOptions}
                                 optionLabel="label"
                                 onChange={handleDropdownChange}
-                                placeholder='Ref Mhs' />
+                                placeholder='Pilih Mahasiswa' />
                             </div>
                         </div>
                     </div>

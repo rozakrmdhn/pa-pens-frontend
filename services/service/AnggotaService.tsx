@@ -39,8 +39,8 @@ export const AnggotaService = {
                 throw error;
             });
     },
-    getAllAnggota() {
-        return apiClient.get(`${process.env.API_HOST}/magang/anggota`)
+    getAllAnggota(query?: string) {
+        return apiClient.get(`${process.env.API_HOST}/magang/anggota${query}`)
             .then((response) => response.data.data as Magang.Anggota[])
             .catch((error) => {
                 console.error("There was an error fetching the data!", error);

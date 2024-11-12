@@ -23,8 +23,8 @@ apiClient.interceptors.request.use(
 );
 
 export const MahasiswaService = {
-    getMahasiswa() {
-        return apiClient.get(`/mahasiswa`)
+    getMahasiswa(query?: string) {
+        return apiClient.get(`/mahasiswa${query}`)
             .then((response) => response.data.data as Master.Mahasiswa[])
             .catch((error) => {
                 throw error;

@@ -17,20 +17,31 @@ import { Toast } from 'primereact/toast';
 import { Demo, Master, Magang } from '@/types';
 import { DosenService } from '@/services/service/DosenService';
 import { MagangService } from '@/services/service/MagangService';
-import Cookies from 'js-cookie';
-import jwt from 'jsonwebtoken';
+import { AuthService } from '@/services/service/AuthService';
 
 type DropdownOption = { label: string; value: string };
+
+type UserActive = {
+    user?: {
+        id?: string;
+        id_mahasiswa?: string;
+        id_dosen?: string;
+        role?: string;
+    }
+};
 
 const Pengajuan = () => {
     useEffect(() => {
         if (!isLoaded.current) {
+            const user = AuthService.getCurrentUser();
+            setUserActive({ ...user });
             loadPengajuan();
             loadDosen();
             isLoaded.current = true;
         }
         initFilters();
     }, []);
+
 
     let emptyDaftar: Magang.Daftar = {
         id: '',
@@ -49,6 +60,8 @@ const Pengajuan = () => {
     const dt = useRef<DataTable<any>>(null);
     const isLoaded = useRef(false);
     const menu = useRef<Menu>(null);
+
+    const [userActive, setUserActive] = useState<UserActive>({});
 
     const [rows, setRows] = useState(10);
     const [loading, setLoading] = useState(true);
@@ -111,7 +124,6 @@ const Pengajuan = () => {
     const openVerifikasi = (pengajuan: Magang.Daftar) => {
         setPengajuan({ ...pengajuan});
         setVerifikasiDialog(true);
-        // console.log(pengajuan);
     };
     // Hide Verifikasi Dialog
     const hideDialog = () => {
@@ -128,67 +140,6 @@ const Pengajuan = () => {
     const hidePlotingDialog = () => {
         setSubmitted(false);
         setPlotingDialog(false);
-    };
-
-    const loadPengajuan = async () => {
-        try {
-            // Endpoint : api/magang
-            // await MagangService.getPengajuan().then((data) => {
-            //     setPengajuans(getData(data));
-            //     setLoading(false);
-            // });
-
-            // Retrieve and parse the 'currentUser' cookie
-            const currentUserCookie = Cookies.get('currentUser');
-            if (!currentUserCookie) throw new Error('Authentication cookie not found.');
-
-            // Parse cookie and decode access token
-            const { accessToken, user } = JSON.parse(currentUserCookie);
-            const decodedToken: any = jwt.decode(accessToken); // Decode to check validity if needed
-
-            // Check the role from the parsed user object
-            const role = user?.role;
-            const id_mahasiswa = user?.id_mahasiswa;
-
-            console.log(id_mahasiswa);
-
-            // Fetch data based on role
-            let data;
-            if (role === 'admin') {
-                await MagangService.getPengajuan().then((data) => {
-                    setPengajuans(getData(data));
-                    setLoading(false);
-                });
-            } else {
-                await MagangService.getPengajuanByMahasiswa(id_mahasiswa).then((data) => {
-                    setPengajuans(getData(data));
-                    setLoading(false);
-                });
-            }
-        } catch (error: any) {
-            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
-            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const getDataDosen = (data: Master.Dosen[]) => {
-        return (data || []).map((d) => ({
-            label: d.nama || '',  // Handle undefined values
-            value: d.id || '',    // Handle undefined values
-        }));
-    };
-    const loadDosen = async () => { 
-        try {
-            // Endpoint : api/magang/dosen
-            const data = await DosenService.getDosen();
-            setDropdownDosenValue(getDataDosen(data));  // Store transformed data for the dropdown
-        } catch (error: any) {
-            console.error("Error loading Dosen data:", error);
-        } finally {
-            setLoading(false);
-        }
     };
 
     const dateBodyTemplate = (rowData: Magang.Daftar) => {
@@ -229,21 +180,36 @@ const Pengajuan = () => {
         { label: '2024/2025', value: '2024' },
     ];
     const overlayMenuItems = (rowData: any) => [
-        {
-            label: 'Ubah Usulan',
-            icon: 'pi pi-pencil',
-            command: () => router.push(`/pengajuan/pendaftaran/${rowData?.id}`)
-        },
-        {
-            label: 'Verifikasi',
-            icon: 'pi pi-pencil',
-            command: () => openVerifikasi(rowData)
-        },
-        {
-            label: 'Ploting Dosbing',
-            icon: 'pi pi-user-plus',
-            command: () => openPlotingDosbing(rowData)
-        },
+        ...(rowData?.status_persetujuan === 0 && userActive.user?.role === 'mahasiswa' ? [
+            {
+                label: 'Ubah Usulan',
+                icon: 'pi pi-pencil',
+                command: () => router.push(`/pengajuan/pendaftaran/${rowData?.id}`)
+            },
+        ] : []),
+        ...(userActive.user?.role === 'admin' ? [
+            {
+                label: 'Ubah Usulan',
+                icon: 'pi pi-pencil',
+                command: () => router.push(`/pengajuan/pendaftaran/${rowData?.id}`)
+            },
+            {
+                label: 'Verifikasi',
+                icon: 'pi pi-pencil',
+                command: () => openVerifikasi(rowData)
+            },
+            {
+                label: 'Ploting Dosbing',
+                icon: 'pi pi-user-plus',
+                command: () => openPlotingDosbing(rowData)
+            },
+        ] : [
+            {
+                label: 'Detail Usulan',
+                icon: 'pi pi-eye',
+                command: () => router.push(`/pengajuan/detail/${rowData?.id}`)
+            },
+        ]),
         {
             label: 'Monitoring',
             icon: 'pi pi-desktop',
@@ -256,23 +222,65 @@ const Pengajuan = () => {
         },
     ];
 
+    const loadPengajuan = async () => {
+        const userActive = AuthService.getCurrentUser();
+        try {
+            // Fetch data based on role
+            if (userActive.user.role === 'admin') {
+                // Endpoint : api/magang
+                await MagangService.getPengajuan().then((data) => {
+                    setPengajuans(getData(data));
+                    setLoading(false);
+                });
+            } else if (userActive.user.role === 'mahasiswa') {
+                // Endpoint : api/magang/pengajuan/mahasiswa/{id_mahasiswa}
+                await MagangService.getPengajuanByMahasiswa(userActive.user.id_mahasiswa).then((data) => {
+                    setPengajuans(getData(data));
+                    setLoading(false);
+                });
+            }
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getDataDosen = (data: Master.Dosen[]) => {
+        return (data || []).map((d) => ({
+            label: d.nama || '',  // Handle undefined values
+            value: d.id || '',    // Handle undefined values
+        }));
+    };
+    const loadDosen = async () => { 
+        try {
+            // Endpoint : api/magang/dosen
+            const data = await DosenService.getDosen();
+            setDropdownDosenValue(getDataDosen(data));  // Store transformed data for the dropdown
+        } catch (error: any) {
+            console.error("Error loading Dosen data:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     // Proses Verifikasi
     const simpanVerifikasi = async () => {
+        const userActive = AuthService.getCurrentUser();
         setSubmitted(true);
         try {
             // Ensure that pengajuan.id is defined
             if (!pengajuan?.id) {
                 throw new Error('Pengajuan ID is missing');
             }
-            // Proceed with the API call
             // Endpoint : api/magang/pengajuan/{id}/verifikasi
-            console.log(pengajuan);
             const result = await MagangService.verifikasiPengajuan(pengajuan.id, pengajuan);
             toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });
             loadPengajuan();
         } catch (error: any) {
             const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
-                toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         } finally {
             setVerifikasiDialog(false);
         }
@@ -280,13 +288,13 @@ const Pengajuan = () => {
 
     // Proses Ploting Dosen Pembimbing
     const simpanPlotingDosbing = async () => {
+        const userActive = AuthService.getCurrentUser();
         setSubmitted(true);
         try {
             // Ensure that pengajuan.id is defined
             if (!pengajuan?.id) {
                 throw new Error('Pengajuan ID is missing');
             }
-            // Proceed with the API call
             // Endpoint : api/magang/pengajuan/{id}/ploting
             const result = await MagangService.plotingDosbim(pengajuan.id, pengajuan);
             toast.current?.show({ severity: result.status, summary: 'Updated', detail: result.message, life: 3000 });

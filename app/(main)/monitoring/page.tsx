@@ -13,6 +13,16 @@ import { Column } from 'primereact/column';
 import { Button } from 'primereact/button';
 import { Dialog } from 'primereact/dialog';
 import { InputTextarea } from 'primereact/inputtextarea';
+import { AuthService } from '@/services/service/AuthService';
+
+type UserActive = {
+    user?: {
+        id?: string;
+        id_mahasiswa?: string;
+        id_dosen?: string;
+        role?: string;
+    }
+};
 
 const Monitoring = () => {
     // Default Property Value State
@@ -40,6 +50,9 @@ const Monitoring = () => {
     const dt = useRef<DataTable<any>>(null);
     const [rows, setRows] = useState(10);
     const menu = useRef<Menu>(null);
+
+    const [userActive, setUserActive] = useState<UserActive>({});
+
     const [submitted, setSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [filters, setFilters] = useState<DataTableFilterMeta>({});
@@ -109,13 +122,28 @@ const Monitoring = () => {
     };
 
     // Fetching Data Mahasiswa ref Anggota
-    const loadAnggota = async () => {
+    const loadAnggota = async (userActive: any) => {
+        let result;
         try {
-            // Endpoint : api/magang/anggota
-            const result = await AnggotaService.getAllAnggota();
+            if (userActive.user?.role === 'mahasiswa') {
+                const mahasiswaId = userActive.user?.id_mahasiswa;
+                const query = `?id_mahasiswa=${mahasiswaId}`;
+                // Endpoint : api/magang/anggota
+                result = await AnggotaService.getAllAnggota(query);
+            } else if (userActive.user?.role === 'admin') {
+                const query = '';
+                result = await AnggotaService.getAllAnggota(query);
+            } else {
+                const dosenId = userActive.user.id_dosen;
+                const query = `?id_dosen=${dosenId}`;
+                // Endpoint : api/magang/anggota
+                result = await AnggotaService.getAllAnggota(query);
+            }
+
             setAnggotas(result);
-        } catch (error) {
-            console.log('Failed to load data', error);
+        } catch (error: any) {
+            const errorMessage = error?.response?.data?.message || 'Failed to fetching data';
+            toast.current?.show({ severity: 'error', summary: 'Error', detail: errorMessage, life: 3000 });
         }
     };
 
@@ -166,10 +194,21 @@ const Monitoring = () => {
     };
 
     useEffect(() => {
-        loadAnggota();
-        if (selectedAnggota.id_mahasiswa) {
-            loadLogbookMahasiswa();
+        const userActive = AuthService.getCurrentUser();
+        setUserActive({ ...userActive });
+
+        if (userActive.user.role === 'admin') {
+            loadAnggota(userActive);
+            if (selectedAnggota.id_mahasiswa) {
+                loadLogbookMahasiswa();
+            }
+        } else if (userActive.user.role === 'dosen') {
+            loadAnggota(userActive);
+            if (selectedAnggota.id_mahasiswa) {
+                loadLogbookMahasiswa();
+            }
         }
+
     }, [selectedAnggota, loadLogbookMahasiswa]);
 
     const reloadTable = () => {
@@ -219,7 +258,7 @@ const Monitoring = () => {
                                 options={dropdownOptions}
                                 optionLabel="label"
                                 onChange={handleDropdownChange}
-                                placeholder='Ref Mhs' />
+                                placeholder='Pilih Mahasiswa' />
                             </div>
                         </div>
                     </div>
