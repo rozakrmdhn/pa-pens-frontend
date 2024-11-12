@@ -146,12 +146,23 @@ const Logbook = () => {
     const handleInputChange = (e: any, field: string) => {
         const value = e.target.type === 'file' ? e.target.files[0] : e.target.value;
 
-        setLogbook({ 
-            ...logbook, 
-            [field]: value,
-            id_mahasiswa: selectedAnggota.id_mahasiswa,
-            id_anggota:  selectedAnggota.id
-        });
+        if (userActive.user?.role === 'mahasiswa') {
+            const mahasiswaId = userActive.user?.id_mahasiswa;
+            const findAnggota = anggotas.find((data) => data.id_mahasiswa === mahasiswaId);
+            setLogbook({ 
+                ...logbook, 
+                [field]: value,
+                id_mahasiswa: mahasiswaId,
+                id_anggota:  findAnggota?.id
+            });
+        } else {
+            setLogbook({ 
+                ...logbook, 
+                [field]: value,
+                id_mahasiswa: selectedAnggota.id_mahasiswa,
+                id_anggota:  selectedAnggota.id
+            });
+        }
     };
 
     // Fetching Data Mahasiswa ref Anggota
